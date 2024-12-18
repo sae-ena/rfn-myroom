@@ -1,0 +1,92 @@
+
+.roomH1{
+    text-align: center;
+    color: #080401;
+    margin-bottom: 30px;
+}
+
+/* Room Table */
+.room-table {
+    width: 90%; 
+    /* Table width can exceed container */
+    /* border-collapse: collapse; */
+    /* min-width: 1000px;  */
+    overflow: hidden;
+    /* Ensures the table has minimum width */
+}
+
+.room-table th, 
+.room-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+}
+
+.room-table th {
+    background-color: #ff6600;
+    color: white;
+    font-weight: bold;
+}
+
+.room-table tbody tr:hover {
+    background-color: #281a1a;
+}
+
+/* Edit & Delete Buttons */
+.edit-button{
+    position: relative;
+    
+    padding: 8px 22px;
+}
+.delete-button{
+    
+    padding: 8px 12px;
+}
+.edit-button,
+.delete-button {
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.edit-button {
+    background-color: #4CAF50;
+    color: white;
+    top: 8px;
+}
+
+.delete-button {
+    background-color: #f44336;
+    color: white;
+}
+
+.edit-button:hover {
+    background-color: #45a049;
+}
+
+.delete-button:hover {
+    background-color: #d32f2f;
+}
+
+/* Status & Availability Styling */
+td:nth-child(7), /* Status */
+td:nth-child(8)  /* Availability */ {
+    font-weight: bold;
+}
+
+td:nth-child(7) { /* Status (Active/Inactive) */
+    color: #ff6600;
+}
+
+td:nth-child(8) { /* Availability (Booked/Unbooked) */
+    color: #4CAF50; /* Unbooked as Green */
+}
+
+/* Enable horizontal scrolling */
+.dashboard-container {
+    overflow: scroll;
+    overflow-x: auto;
+}
+
