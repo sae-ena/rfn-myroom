@@ -51,6 +51,16 @@ h1 {
     color: #ff6600;
     margin-bottom: 30px;
 }
+#userLogin {
+    position: absolute;
+    text-align: center;
+    font-size: 34px;
+    color: #e6e6e6;
+    margin-bottom: 30px;
+    top: 66px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    text-shadow: 20px 9px 5px rgba(0, 0, 0, 0.4);
+}
 
 form {
     display: flex;
@@ -150,15 +160,7 @@ input:focus {
     transition: opacity 1s ease-out;
 }
 
-/* Animation for fading out the notification */
-.danger-notify.fade-out {
-    opacity: 0;
-}
 
-/* Optionally, automatically hide the notification after 4 seconds */
-.danger-notify.auto-hide {
-    animation: fadeOut 4s forwards;
-}
 
 @keyframes fadeOut {
     0% {

@@ -1,94 +1,124 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="dashboard.css">
-</head>
-<body>
-    <div class="dashboard-wrapper">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <h2>Admin Panel</h2>
-            <ul>
-                <li><a href="#">Dashboard</a></li>
-                <li><a href="table.html">Manage Rooms</a></li>
-                <li><a href="#">Add Room</a></li>
-                <li><a href="#">Users</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href="#">Logout</a></li>
-            </ul>
-        </nav>
 
-        <!-- Main Dashboard Content -->
-        <div class="dashboard-content">
-            <header class="dashboard-header">
-                <h1>Dashboard Overview</h1>
-                <button class="add-room-button">Add New Room</button>
-            </header>
-
-            <!-- Room Overview Cards -->
-            <div class="room-overview">
-                <div class="card">
-                    <h3>Total Rooms</h3>
-                    <p>56</p>
-                </div>
-                <div class="card">
-                    <h3>Available Rooms</h3>
-                    <p>34</p>
-                </div>
-                <div class="card">
-                    <h3>Booked Rooms</h3>
-                    <p>22</p>
-                </div>
-                <div class="card">
-                    <h3>Inactive Listings</h3>
-                    <p>5</p>
-                </div>
+<?php require('header.php') ; ?>
+        <!-- Hero Section Start -->
+        <section class="hero">
+          <div class="hero-content">
+            <h1>Find Your Perfect Place</h1>
+            <p>Search for locations and room types that suit your needs.</p>
+            
+            <div class="search-form">
+              <input type="text" placeholder="Enter Location" class="location-input" />
+              <select class="room-type-input">
+                <option value="single">Single Room</option>
+                <option value="double">Double Room</option>
+                <option value="suite">Suite</option>
+                <option value="apartment">Apartment</option>
+              </select>
+              <button class="search-btn">Search</button>
             </div>
+          </div>
+        </section>
+      
 
-            <!-- Recent Room Listings -->
-            <section class="recent-rooms">
-                <h2>Recent Room Listings</h2>
-                <table class="room-table">
-                    <thead>
-                        <tr>
-                            <th>Room Title</th>
-                            <th>Location</th>
-                            <th>Price</th>
-                            <th>Status</th>
-                            <th>Availability</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Spacious 2BHK Apartment</td>
-                            <td>New York, NY</td>
-                            <td>$2500/month</td>
-                            <td>Active</td>
-                            <td>Unbooked</td>
-                        </tr>
-                        <tr>
-                            <td>Cozy Single Room</td>
-                            <td>Los Angeles, CA</td>
-                            <td>$1200/month</td>
-                            <td>Inactive</td>
-                            <td>Booked</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
+    
+      <div class="container-aboutUs" id="about">
+        <div class="aboutSectionLeft">
+          <h2 class="fs-2">About Us</h2>
 
-            <!-- Graphical Data -->
-            <section class="dashboard-chart">
-                <h2>Room Status Overview</h2>
-                <canvas id="roomChart"></canvas>
-            </section>
+          <p>
+            Welcome to Casabo Romm Finder, nestled in the heart of Kathmandu, Nepal. We are a premium destination offering a unique blend of luxury and comfort, where traditional Nepalese hospitality meets modern elegance. Whether you’re visiting for a relaxing getaway, a family retreat, or a corporate escape, our resort promises an unforgettable experience. Surrounded by breathtaking landscapes and steeped in rich cultural heritage, Casabo Resort is the perfect place to unwind and explore the beauty of Nepal. Come experience our exceptional services and immerse yourself in the tranquility and luxury of our beautifully designed rooms, world-class amenities, and exclusive experiences.
+          </p>
         </div>
+
+        <div class="imageSection">
+         
+        </div>
+      </div>
+    
+
+    <div class="interior-info-section">
+      <div class="title">
+        <h4 class="text-center fs-2 fw-bolder">Our Interior</h4>
+      </div>
+      <div
+        class="container-md container-fluid-lg d-flex justify-content-around mt-4 gap-5"
+      >
+        <div class="col-5">
+          <img src="images/interrioroom.jpg" alt="" width="100%" />
+        </div>
+        <div class="col-6">
+          <div class="texts">
+            <h2>Rooms</h2>
+            <p class="fs-5">
+              Dealers can list available rooms with detailed information, including room type, price, amenities, location, and high-quality images. Each listing is designed to provide all necessary details to help users make informed decisions.
+            </p>
+
+            <h2>Amenities</h2>
+            <ul class="fs-5">
+              <li>Easy Online Booking: Book rooms with a few clicks.</li>
+              <li>Availability Notifications: Get alerts for room availability or price drops.</li>
+              <li>Dealer Profiles & Reviews: Read reviews and ratings of dealers.</li>
+              <li>Full-length mirror with LED lighting.</li>
+              <li>Flat-screen TV with international programming.</li>
+              <li>
+                Outlets for personal electronics, including multiple plug and
+                socket types (USB).
+              </li>
+              <li>Smart TV features.</li>
+            </ul>
+            <div class="text-center mt-4">
+              <button class="btn btn-warning ml-5 fs-6">Find Out More</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
-    <script src="dashboard.js"></script>
-</body>
-</html>
+
+    <div class="gallery_section p-5" id="gallery">
+      <div class="title mt-4">
+        <h4 class="text-center fs-2 fw-bolder">Gallery</h4>
+      </div>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-5">
+            <img
+              src="images/Gallery1.jpg"
+              width="100%"
+              height="50%"
+              srcset=""
+            />
+          </div>
+
+          <div class="col-md-7">
+            <div class="row container-fluid">
+              <div class="col-sm-6 col-md-6 mt-4">
+                <img src="images/Gallery2.jpg" alt="" width="100%" />
+              </div>
+              <div class="col-sm-6 col-md-6 mt-4">
+                <img src="images/Gallery3.jpg" alt="" width="100%" />
+              </div>
+            </div>
+            <div class="row container-fluid">
+              <div class="col-md-6 col-sm-6 mt-4">
+                <img src="images/Gallery5.jpg" alt="" width="100%" />
+              </div>
+              <div class="col-md-6 col-sm-6 mt-4">
+                <img src="images/Gallery4.jpg" alt="" width="100%" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4 class="roomsTitle" id="roomsTitle">Explore Rooms 
+    <?php if(! isset($_SESSION['auth_id'])){  
+    echo'<span style="position:relative;left:691px; font-size:16px;padding: 10px 30px;background-color:rgb(219, 57, 57); border-radius:36px 12px">Please log in to book a room.</span>';} ?></h4>
+    <div class="Rooms">
+     
+      <?php require('roomData.php'); ?>
+    </div>
+
+    
+    <?php require('footer.php') ; ?>

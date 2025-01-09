@@ -23,11 +23,9 @@ if ($_SERVER["REQUEST_METHOD"] === 'GET' && isset($_GET['id'])) {
         $roomDescription = $roomData['room_description'];
         $roomImage = $roomData['room_image'];
 
-    
     } 
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
 
     // Sanitize input data using mysqli_real_escape_string (optional if using prepared statements)
     $roomTitle = mysqli_real_escape_string($conn, $_POST['title']);
@@ -39,6 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if(isset($_POST['enabledEdit']))  $EditMode = mysqli_real_escape_string($conn, $_POST['enabledEdit']);
     
     if (isset($_FILES['room_image']['name']) && $_FILES['room_image']['size'] > 0 ){
+
+
 
         // Get the file details
         $file_name = $_FILES['room_image']['name'];
@@ -94,9 +94,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         
     if (!isset($form_error)) {
+        $imagePath = $_POST['previousImagePath'] ?? $new_file_name;
         $query = "UPDATE rooms SET room_name = ?, room_location = ?, room_price = ?, room_type = ?, room_status = ?, room_description = ?, room_image = ? WHERE room_id = ?;";
         if ($stmt = $conn->prepare($query)) {
-            $stmt->bind_param("ssdssssi", $roomTitle, $roomLocation, $roomPrice, $roomType, $roomStatus, $roomDescription, $new_file_name, $EditMode);
+            $stmt->bind_param("ssdssssi", $roomTitle, $roomLocation, $roomPrice, $roomType, $roomStatus, $roomDescription, $imagePath, $EditMode);
             if ($stmt->execute()) {
                 $successfullyRoomAdded = "Rooms information has been updated.";
                 $roomTitle = $roomLocation = $roomPrice = $roomStatus = $roomType = $roomDescription ="";
@@ -109,16 +110,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     }
     else{
+        $currentDateTime = date('Y-m-d H:i:s');
     // Prepare the SQL query with placeholders
-    $query = "INSERT INTO rooms (room_name, room_location, room_price, room_type, room_status, room_description, room_image) 
-              VALUES (?, ?, ?, ?, ?, ?, ?);";
+    $query = "INSERT INTO rooms (room_name, room_location, room_price, room_type, room_status, room_description, room_image,created_at) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
     if (!isset($form_error)) {
 
         if ($stmt = $conn->prepare($query)) {
 
             // Bind the variables to the prepared statement
-            $stmt->bind_param("ssdssss", $roomTitle, $roomLocation, $roomPrice, $roomType, $roomStatus, $roomDescription, $new_file_name);
+            $stmt->bind_param("ssdsssss", $roomTitle, $roomLocation, $roomPrice, $roomType, $roomStatus, $roomDescription, $new_file_name, $currentDateTime);
 
             // Execute the query
             if ($stmt->execute()) {
@@ -186,17 +188,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </select>
 
 
-            <!-- Parking -->
-            <label>Parking Available:</label>
-            <div class="radio-group">
-                <label><input type="radio" name="parking" value="Yes" required> Yes</label>
-                <label><input type="radio" name="parking" value="No" required> No</label>
-            </div>
-
             <!-- Upload Photos -->
             <label for="photos">Upload Photos:</label>
             <?php if(isset($roomImage)){
                  echo'  <img src="/admin/uploads/'.$roomImage.'" alt="" style="width: 100px; height: auto;">
+                 <input type="text" hidden name="previousImagePath" value="'.$roomImage.'" >
              ';
             }?>
             <input type="file" id="photos" name="room_image" accept="image/*" >

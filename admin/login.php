@@ -40,6 +40,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST' )&& isset($_POST['login'])) {
                     session_start();
                     $_SESSION['user_name'] = $row['user_name'];
                     $_SESSION['user_email'] = $user_emailByLogin;
+                    $_SESSION['user_type'] === "admin";
 
                     // Redirect to the dashboard or main page (replace 'dashboard.php' with the actual destination)
                     header("Location: dashboard.php");
