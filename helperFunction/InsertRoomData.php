@@ -6,7 +6,7 @@ class InsertRoomData
     {
         require('admin/dbConnect.php');
         if ($conn->query($query) === TRUE) {
-            return "New record created successfully";
+            return "Success! Your update was saved.";
         } else {
             return "Error: " . $sql . "<br>" . $conn->error;
         }

@@ -6,11 +6,18 @@ class CheckLogin{
         if (session_status() == PHP_SESSION_NONE) {
             session_start();        
         }
+
+      
         // if($_SESSION['user_type'] === "user") header("Location:../index.php");
-        if (! isset($_SESSION['user_email']) && ! isset($_SESSION['user_name'])) {
-            header("Location: login.php");
-            exit(); // Ensure no further code is executed after the redirection
+        if (isset($_SESSION['user_type']) && $_SESSION['user_type'] !== "admin") {
+            header("Location: ../index.php");
+            exit(); 
         }
+        elseif (! isset($_SESSION['user_type']) && ! isset($_SESSION['user_email'])) {
+            header("Location: login.php");
+            exit(); 
+        }
+       
         
     }
 }

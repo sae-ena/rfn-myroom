@@ -1,7 +1,7 @@
 <?php
 require('helperFunction/roomFetchForWebsite.php');
 require('helperFunction/InsertRoomData.php');
-$query = "SELECT r.* FROM rooms r Left join bookings b ON r.room_id = b.room_id  where (b.status != 'confirmed' OR b.booking_id IS NULL)  AND r.room_status = 'active' ORDER BY r.created_at DESC  LIMIT 15;";
+$query = "SELECT  r.* FROM rooms r Left join bookings b ON r.room_id = b.room_id  where (b.status != 'confirmed' OR b.booking_id IS NULL)  AND r.room_status = 'active'GROUP BY r.room_id ORDER BY r.created_at DESC  LIMIT 15;";
 $rooms = RoomFetchForWebsite::fetchRoomData($query);
 
 

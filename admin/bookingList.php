@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] === 'GET' && isset($_GET['room_id'])) {
         JOIN 
             rooms r ON b.room_id = r.room_id
         WHERE 
-            r.room_id = ? AND b.status = 'pending';";
+            r.room_id = ? AND b.status = 'pending' AND b.is_active = 1;";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $roomId);  // "i" denotes integer type for user_id
     $stmt->execute();
@@ -39,13 +39,13 @@ if ($_SERVER["REQUEST_METHOD"] === 'GET' && isset($_GET['room_id'])) {
         $stmtRoom = $conn->prepare($roomQuery);
         $stmtRoom->bind_param("i", $booking_id);
         $stmtRoom->execute();
-        $roomId = $stmtRoom->get_result()->fetch_assoc();
+        $roomId = $stmtRoom->get_result()->fetch_assoc()['room_id'];
 
         // Update the status of the room
         $roomStatus = "inActive";
         $query = "UPDATE rooms SET room_status = ? WHERE room_id = ?";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param("si", $roomStatus, $roomId['room_id']);
+        $stmt->bind_param("si", $roomStatus, $roomId);
         $stmt->execute();
 
         // Update the status of the booking
@@ -54,28 +54,24 @@ if ($_SERVER["REQUEST_METHOD"] === 'GET' && isset($_GET['room_id'])) {
         $stmt->bind_param("si", $status, $booking_id);
         $stmt->execute();
 
-        $successfullyApprove = "Booking approved successfully!";
-    } elseif (isset($_POST['booking_cancel_id'])) {
+        $query2 = "UPDATE bookings SET status = ? WHERE status != ? AND room_id = ? ";
+        $stmt2 = $conn->prepare($query2);
+        $cancelStatus = "canceled";
+        // $stmt->bind_param("sis", $cancelStatus, $booking_id, $status)
+        $stmt2->bind_param('ssi',$cancelStatus,$status,$roomId);
+        $stmt2->execute();
+       
+
+    $successfullyApprove = "Booking approved successfully!";
+ 
+    }elseif(isset($_POST['booking_cancel_id'])) {
 
         $booking_id = $_POST['booking_cancel_id'];
-        $status = "canceled";
-        // $roomQuery= "SELECT room_id FROM bookings WHERE booking_id = ?";
-        // $stmtRoom = $conn->prepare($roomQuery);
-        // $stmtRoom->bind_param("i", $booking_id);  
-        // $stmtRoom->execute();
-        // $roomId =$stmtRoom->get_result()->fetch_assoc();
-
-        // // Update the status of the room
-        // $roomStatus = "inActive";
-        // $query = "UPDATE rooms SET room_status = ? WHERE room_id = ?";
-        // $stmt = $conn->prepare($query);
-        // $stmt->bind_param("si", $roomStatus, $roomId['room_id']); 
-        // $stmt->execute();
-
         // Update the status of the booking
-        $query = "UPDATE bookings SET status = ? WHERE booking_id = ?";
+        $query = "UPDATE bookings SET is_active = ? WHERE booking_id = ?";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param("si", $status, $booking_id);
+        $Inactive=0;
+        $stmt->bind_param("si", $Inactive, $booking_id);
         $stmt->execute();
 
         $successfullyApprove = "Booking Cancelled successfully!";
@@ -84,8 +80,6 @@ if ($_SERVER["REQUEST_METHOD"] === 'GET' && isset($_GET['room_id'])) {
     }
 }
 
-// Close connection
-// $stmt->close();
 
 ?>
 <?php if (isset($successfullyApprove)): ?>

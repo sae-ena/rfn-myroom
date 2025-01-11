@@ -5,7 +5,6 @@ const signupForm = document.getElementById('signup-form');
 
 // Initially, display login form
 loginForm.classList.add('visible');
-
 // Toggle between login and signup forms
 toggleButton.addEventListener('click', () => {
     if (loginForm.classList.contains('visible')) {

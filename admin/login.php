@@ -7,7 +7,7 @@ $user_passwordByLogin = "";
 // $login_error = "";
 
 // Define variables to store form data and errors
-$form_error = "";
+$form_error = null;
 
 if (isset($_SESSION['user_email'])) {
         header("Location: dashboard.php");
@@ -77,14 +77,22 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         $form_error = "Please fill all required fields.";
     }
     elseif(isset($user_email)){
-        $uniqueCheck = "SELECT user_email FROM users WHERE user_email = '$user_email'";
+        $uniqueCheck = "SELECT user_email FROM users WHERE user_email = '$user_email' ";
         $result = $conn->query($uniqueCheck);
         if($result->num_rows > 0){
-    $email_error = "Email already exists";
+    $form_error = "Email already exists";
 
 }
-elseif (strlen($user_number) < 5) {
-    $form_error = "Number must be at least 5 characters long.";
+    elseif(isset($user_number)){
+        $uniqueCheck = "SELECT user_number FROM users WHERE user_number = '$user_number' ";
+        $result = $conn->query($uniqueCheck);
+        if($result->num_rows > 0){
+    $form_error = "PhoneNumber already exists";
+
+}
+elseif(! str_contains($user_email,'@'))  $form_error = "Invalid Email Format";
+elseif (strlen($user_number) != 10 || !str_starts_with($user_number,'98')) {
+    $form_error = "Invalid PhoneNumber.";
 }
 elseif (strlen($user_password) < 5) {
     $form_error = "Password must be at least 5 characters long.";
@@ -95,8 +103,8 @@ else{
         $hashed_password = password_hash($user_password, PASSWORD_DEFAULT);
 
         // Prepare the SQL query to insert data into the 'users' table
-        $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_status, user_password)
-                  VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '$user_status', '$hashed_password')";
+        $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_status, user_password,user_type)
+                  VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '$user_status', '$hashed_password','admin')";
 
         if ($conn->query($query) === TRUE) {
            $successfullyRegister = "User registered successfully!";
@@ -107,6 +115,8 @@ else{
         // Close the database connection
         $conn->close();
     }
+
+}
     }
 }
 ?>
@@ -117,6 +127,8 @@ else{
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Sign Up & Login</title>
     <link rel="stylesheet" href="login.css">
+    <?php 
+require('../helperFunction/SweetAlert.php');?>
 </head>
 <body>
 <?php if (isset($email_error)): ?>
@@ -161,11 +173,6 @@ else{
                 <h1>Sign Up</h1>
                  <!-- Form submits to the same page -->
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" class="register-form">
-            
-                
-                <?php if (isset($form_error)): ?>
-                    <p style="color: red;"><?php echo $form_error; ?></p>
-                <?php endif; ?>
     
                 <label for="user_name">Full Name</label>
                 <input type="text" id="user_name" name="user_name" value="<?php echo isset($user_name) ?  htmlspecialchars($user_name):""; ?>" required placeholder="Enter your name">
@@ -202,6 +209,16 @@ else{
         setTimeout(function() {
             window.location.href = 'login.php'; 
         }, 1000);
+    <?php endif; ?>
+    <?php if (isset($form_error) && is_string($form_error)): ?>
+        function gotoSignup() {
+            const signupForm = document.getElementById('signup-form');
+
+            loginForm.classList.remove('visible');
+        signupForm.classList.add('visible');
+        toggleButton.textContent = "Go to Login";
+        }
+        gotoSignup();
     <?php endif; ?>
 </script>
 </body>

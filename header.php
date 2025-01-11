@@ -30,7 +30,7 @@
             </div>
           </li>
           <?php
-          if (isset($_SESSION['user_email'])) {
+          if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === "user") {
 
             echo'<li><a href="login" id="logoutBtn" class="btn">Logout</a></li>';
     } else{

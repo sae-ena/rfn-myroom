@@ -4,9 +4,9 @@ require "dbConnect.php";
 // Fetch data from the ROOMS table
 $query = "SELECT r.*
 FROM rooms r
-LEFT JOIN bookings b ON r.room_id = b.room_id AND b.status = 'booked'
+LEFT JOIN bookings b ON r.room_id = b.room_id AND b.status = 'pending'
 WHERE r.room_status = 'active'
-  AND b.room_id IS NULL;";
+  AND b.is_active = 1";
 $result = $conn->query($query);
 
 if ($result->num_rows > 0) {
