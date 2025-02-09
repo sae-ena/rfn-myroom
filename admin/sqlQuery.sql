@@ -11,3 +11,11 @@ CREATE TABLE rooms (
     room_type VARCHAR(255),
     Status Enum('active','inActive') NOT NULL,
 );
+
+CREATE TABLE media (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    image_name VARCHAR(255) NOT NULL,
+    image_path VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,6 +1,7 @@
 <?php
-session_start(); 
+session_start();
 require('admin/dbConnect.php');
+require('helperFunction/InsertRoomData.php');
 // Initialize variables for login data
 $user_emailByLogin = "";
 $user_passwordByLogin = "";
@@ -10,13 +11,13 @@ $user_passwordByLogin = "";
 $form_error = null;
 
 if (isset($_SESSION['user_email'])) {
-        header("Location: dashboard.php");
-        exit(); // Ensure no further code is executed after the redirection
-    }       
+    header("Location: index.php");
+    exit(); // Ensure no further code is executed after the redirection
+}
 
 
 // Check if the login form is submitted
-if (($_SERVER['REQUEST_METHOD'] === 'POST' )&& isset($_POST['login'])) {
+if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
     // Get the input data from the form
     $user_emailByLogin = $_POST['userEmailByLogin'];
     $user_passwordByLogin = $_POST['userPasswordByLogin'];
@@ -24,7 +25,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST' )&& isset($_POST['login'])) {
     // Check if email and password are not empty
     if (!empty($user_emailByLogin) && !empty($user_passwordByLogin)) {
         // Query to check if the user email exists in the database
-        $query = "SELECT user_id, user_password, user_status ,user_type FROM users WHERE user_email = '$user_emailByLogin' LIMIT 1";
+        $query = "SELECT user_id, user_password, user_status ,user_name FROM users WHERE user_email = '$user_emailByLogin' LIMIT 1";
         $result = $conn->query($query);
 
         // Check if the query returned a result (i.e., the email exists)
@@ -34,47 +35,41 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST' )&& isset($_POST['login'])) {
             // Verify the hashed password with the input password
             if (password_verify($user_passwordByLogin, $row['user_password'])) {
                 // Check if the user is active
-               
+
                 if ($row['user_status'] == 'active') {
                     // Successful login, start session and redirect
-                    if($row['user_type'] == 'user'){
-                       
-                        session_start();
-                        $_SESSION['auth_id'] = $row['user_id'];
-                        $_SESSION['user_name'] = $row['user_name'];
-                        $_SESSION['user_email'] = $user_emailByLogin;
-                        $_SESSION['user_type'] = $row['user_type'];
-                        
-                        // Redirect to the dashboard or main page (replace 'dashboard.php' with the actual destination)
-                        header("Location: index.php");
-                    }
-                    else{
-                        $form_error = "You are not authorized to login here.";
-                    }
-                    
+                    session_start();
+                    $_SESSION['user_name'] = $row['user_name'];
+                    $_SESSION['user_email'] = $user_emailByLogin;
+                    $_SESSION['user_type'] = "user";
+                    $_SESSION['auth_id'] = $row['user_id'];
+
+                    // Redirect to the dashboard or main page (replace 'dashboard.php' with the actual destination)
+                    header("Location: index.php");
+
                 } else {
                     // User is inactive
-                    $form_error = "Your account is inactive. Please contact support.";
+                    $login_error = "Your account is inactive. Please contact support.";
                 }
             } else {
                 // Password is incorrect
-                $form_error = "Invalid email or password.";
+                $login_error = "Invalid email or password.";
             }
         } else {
             // Email does not exist
-            $form_error = "Invalid email or password.";
+            $login_error = "Invalid email or password.";
         }
     } else {
         // Email or password is empty
-        $form_error = "Please fill in both email and password.";
+        $login_error = "Please fill in both email and password.";
     }
-}
-elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
-    $user_name = $user_email = $user_number = $user_password = $user_confirm_password="";
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
+    $user_name = $user_email = $user_number = $user_location = $user_confirm_password = $user_password = "";
     // Get form data
     $user_name = $_POST['user_name'];
     $user_email = $_POST['user_email'];
     $user_number = $_POST['user_number'];
+    $user_location = $_POST['user_location'];
     $user_password = $_POST['user_password'];
     $user_confirm_password = $_POST['user_confirmation_password'];
 
@@ -82,77 +77,164 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     if (empty($user_name) || empty($user_email) || empty($user_password)) {
         $form_error = "Please fill all required fields.";
     }
-    elseif(isset($user_email)){
-        $uniqueCheck = "SELECT user_email FROM users WHERE user_email = '$user_email'";
+    if ($user_password !== $user_confirm_password)
+        $form_error = "Confirmation Password didnot match .";
+    elseif (isset($user_email)) {
+        $uniqueCheck = "SELECT user_email FROM users WHERE user_email = '$user_email' ";
         $result = $conn->query($uniqueCheck);
-        if($result->num_rows > 0){
-    $form_error = "Email already exists";
+        if ($result->num_rows > 0) {
+            $form_error = "Email already exists";
 
-}
-elseif (strlen($user_number) < 5) {
-    $form_error = "Number must be at least 5 characters long.";
-}
-elseif (strlen($user_password) < 5) {
-    $form_error = "Password must be at least 5 characters long.";
-}
-elseif($user_password !== $user_confirm_password) $form_error = "Confirmation Password didnot match .";
-else{
+        } elseif (isset($user_number)) {
+            $uniqueCheck = "SELECT user_number FROM users WHERE user_number = '$user_number' ";
+            $result = $conn->query($uniqueCheck);
+            if ($result->num_rows > 0) {
+                $form_error = "PhoneNumber already exists";
 
-        // Hash the password
-        $hashed_password = password_hash($user_password, PASSWORD_DEFAULT);
+            } elseif (!str_contains($user_email, '@'))
+                $form_error = "Invalid Email Format";
+            elseif (strlen($user_number) != 10 || !str_starts_with($user_number, '98')) {
+                $form_error = "Invalid PhoneNumber.";
+            } elseif (strlen($user_password) < 5) {
+                $form_error = "Password must be at least 5 characters long.";
+            } else {
 
-        // Prepare the SQL query to insert data into the 'users' table
-        $query = "INSERT INTO users (user_name, user_email, user_number,  user_password)
-                  VALUES ('$user_name', '$user_email', '$user_number', '$hashed_password')";
+                // Hash the password
+                $hashed_password = password_hash($user_password, PASSWORD_DEFAULT);
 
-        if ($conn->query($query) === TRUE) {
-           $successfullyRegister = "User registered successfully!";
-        } else {
-            $form_error = "Please try again.";
+                // Prepare the SQL query to insert data into the 'users' table
+                $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_password,user_type)
+                  VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '$hashed_password','user')";
+
+                $sqlResult = InsertRoomData::insertData($query);
+                $successfullyRegister = "User registered successfully!";
+
+
+
+            }
         }
-
-        // Close the database connection
-        $conn->close();
-    }
     }
 }
 ?>
+<!DOCTYPE html>
+<html lang="en">
 
-<link rel="stylesheet" href="admin/login.css">
-<body style="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Sign Up & Login</title>
+    <link rel="stylesheet" href="admin/login.css">
+    <?php
+    require('helperFunction/SweetAlert.php'); ?>
+</head>
 
-<h2 id="userLogin">Casabo Room Finder</h2>
-  <!-- Left Side: Login -->
-  <div style="width: 35%; background-color:rgb(44, 104, 164); height: 50vh;display: flex; justify-content: center; align-items: center; margin: 1px 20px; padding: 0; border-radius: 54px 21px;">
-    <div style="color: white; text-align: center;height:60%; width: 80%; max-width: 400px;">
-        <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" style="display: flex; flex-direction: column; gap: 15px;border:2px solid white; padding: 20px; border-radius: 10px;">
-          <h2>Login</h2>
-        <input type="text" id="login" name="userEmailByLogin" value="<?php echo isset($user_emailByLogin) ? htmlspecialchars($user_emailByLogin):""; ?>"  placeholder="Username" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-        <input type="password" name="userPasswordByLogin" value="<?php echo isset($user_passwordByLogin) ? htmlspecialchars($user_passwordByLogin):""; ?>" placeholder="Password" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-        <button type="submit" name="login" style="padding: 10px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Login</button>
-        <p style="color: white; font-size: 14px;">Don't have an account? <a href="#signup" style="color: #ecf0f1; text-decoration: none;">Sign up</a></p>
-      </form>
+<body>
+    <?php if (isset($email_error)): ?>
+        <div class="danger-notify">
+            <span><?php echo $email_error; ?></span>
+        </div>
+    <?php endif; ?>
+    <?php if (isset($login_error)): ?>
+        <div class="danger-notify">
+            <span><?php echo $login_error; ?></span>
+        </div>
+    <?php endif; ?>
+    <?php if (isset($successfullyRegister)): ?>
+        <div class="success-notify">
+            <span><?php echo $successfullyRegister; ?></span>
+        </div>
+    <?php endif; ?>
+    <div class="auth-wrapper"
+        style="background-image: url('admin/uploads/67a89488e8270_4k-dolby-vision-cmwfffw20ah95woc.jpg')">
+        <div class="auth-container">
+            <!-- Toggle Button -->
+            <div class="toggle-container">
+                <button id="toggle-button" class="toggle-button">Go to Sign Up</button>
+            </div>
+
+            <!-- Glassmorphism Forms -->
+            <div id="login-form" class="form-card glass visible">
+                <h1>Login</h1>
+
+                <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
+                    <label for="login-email">Email:</label>
+                    <!-- <input type="email" id="login-email" required> -->
+                    <input type="text" name="userEmailByLogin"
+                        value="<?php echo isset($user_emailByLogin) ? htmlspecialchars($user_emailByLogin) : ""; ?>"
+                        placeholder="Enter your email" required>
+                    <label for="login-password">Password:</label>
+                    <!-- <input type="password" id="login-password" required> -->
+                    <input type="password" name="userPasswordByLogin"
+                        value="<?php echo isset($user_passwordByLogin) ? htmlspecialchars($user_passwordByLogin) : ""; ?>"
+                        placeholder="Enter your password" required>
+                    <button type="submit" class="submit-button" name="login">Login</button>
+
+                </form>
+            </div>
+
+            <div id="signup-form" class="form-card glass ">
+                <h1>Sign Up</h1>
+                <!-- Form submits to the same page -->
+                <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" class="register-form">
+
+                    <label for="user_name">Full Name</label>
+                    <input type="text" id="user_name" name="user_name"
+                        value="<?php echo isset($user_name) ? htmlspecialchars($user_name) : ""; ?>" required
+                        placeholder="Enter your name">
+
+                    <label for="user_email">Email</label>
+                    <input type="email" id="user_email" name="user_email"
+                        value="<?php echo isset($user_email) ? htmlspecialchars($user_email) : ""; ?>" required
+                        placeholder="Enter your email">
+
+                    <label for="user_number">Phone Number</label>
+                    <input type="number" id="user_number" name="user_number"
+                        value="<?php echo isset($user_number) ? htmlspecialchars($user_number) : ""; ?>" required
+                        placeholder="Enter your phone number">
+
+                    <label for="user_location">Location</label>
+                    <input type="text" id="user_location" name="user_location"
+                        value="<?php echo isset($user_location) ? htmlspecialchars($user_location) : ""; ?>"
+                        placeholder="Enter your location (optional)">
+
+
+
+                    <label for="user_password">Password</label>
+                    <input type="password" id="user_password" name="user_password" required
+                        placeholder="Enter a password">
+
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input id="confirmPassword" type="password" name="user_confirmation_password"
+                        placeholder="Confirm Password"
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+
+                    <button type="submit" name="register" class="submit-button">Register</button>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
-
-  <!-- Right Side: Signup -->
-  <div style="width: 40%; background-color:#60BB46; display: flex; justify-content: center; align-items: center; margin: 1px 39px; padding: 0; border-radius: 54px 21px;">
-    <div style="text-align: center; width: 80%; max-width: 400px; margin: 0; padding: 20px; border-radius: 10px;">
-        <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" style="display: flex; flex-direction: column; gap: 15px; " >
-      <h2>Sign Up</h2>
-        <input type="text" name="user_name" value="<?php echo isset($user_name) ?  htmlspecialchars($user_name):""; ?>" placeholder="Full Name" id="signup" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-        <input type="email" name="user_email"  value="<?php echo isset($user_email) ? htmlspecialchars($user_email):""; ?>" placeholder="Email Address" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-        <input type="text" name="user_number" value="<?php echo isset($user_number)? htmlspecialchars($user_number):""; ?>" placeholder="+977 984120302" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-        <input type="password" name="user_password" placeholder="Password" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-        <input type="password" name="user_confirmation_password" placeholder="Confirm Password" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-        <button type="submit" name="register" style="padding: 10px; background-color:rgb(200, 71, 71); color: white; border: none; border-radius: 5px; cursor: pointer;">Sign Up</button>
-        <p style="font-size: 14px;">Already have an account? <a href="#login" style="color:rgb(0, 3, 5); text-decoration: none;">Login</a></p>
-      </form>
     </div>
-  </div>
- <?php
- require('helperFunction/SweetAlert.php');
- ?>
-        
-    </body>
-    </html>
+
+    <script src="admin/login.js"></script>
+    <script>
+        // If PHP successfully registered the user, we delay redirection by 3 seconds
+        <?php if (isset($successfullyRegister)): ?>
+            setTimeout(function () {
+                window.location.href = 'login.php';
+            }, 1000);
+        <?php endif; ?>
+        <?php if (isset($form_error) && is_string($form_error)): ?>
+
+            function gotoSignup() {
+                const signupForm = document.getElementById('signup-form');
+
+                loginForm.classList.remove('visible');
+                signupForm.classList.add('visible');
+                toggleButton.textContent = "Go to Login";
+            }
+            gotoSignup();
+        <?php endif; ?>
+    </script>
+</body>
+
+</html>

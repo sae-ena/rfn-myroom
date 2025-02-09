@@ -16,7 +16,7 @@ $query = "SELECT   u.user_name,   u.user_email, r.room_location,  r.room_name,  
 $stmt = $conn->prepare($query); // "i" denotes integer type for user_id
 $stmt->execute();
 $result = $stmt->get_result();
-
+$rooms = [];
 if ($result->num_rows > 0) {
     // Store the result in an array (optional if you need to manipulate later)
     $rooms = [];
@@ -40,44 +40,27 @@ if ($result->num_rows > 0) {
     <h1 class="roomH1" style="color:white">All Booked Room Records</h1>
     <!-- Filter Section -->
     <div class="filter-section">
-        <form method="GET" action="">
-            <div class="form-row">
-                <!-- Status Filter -->
-                <label for="status">Status:</label>
-                <select name="status" id="status">
-                    <option value="">All</option>
-                    <option value="active" <?php echo isset($_GET['status']) && $_GET['status'] == 'active' ? 'selected' : ''; ?>>Active</option>
-                    <option value="inactive" <?php echo isset($_GET['status']) && $_GET['status'] == 'inactive' ? 'selected' : ''; ?>>Inactive</option>
-                </select>
-
-                <!-- Search Filter -->
-                <label for="search">Search:</label>
-                <input type="number" name="search" id="search"
-                    value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>"
-                    placeholder="Search...">
-
-                <!-- Filter Button -->
-                <button type="submit">Filter</button>
-            </div>
-        </form>
+      
     </div>
-    <table class="room-table">
-        <thead>
-            <tr>
-                <th>UID</th>
-                <th>Room Image</th>
-                <th>Room Title</th>
-                <th>Location</th>
-                <th>User Name</th>
-                <th>User Email</th>
-                <th>Booked Date</th>
-                <th colspan="2" style="text-align: center;">Action</th>
-            </tr>
-        </thead>
-        <tbody>
+   
 
 
             <?php
+            if (is_array($rooms) && count($rooms) > 0) {
+               echo' <table class="room-table">
+                <thead>
+                    <tr>
+                        <th>UID</th>
+                        <th>Room Image</th>
+                        <th>Room Title</th>
+                        <th>Location</th>
+                        <th>User Name</th>
+                        <th>User Email</th>
+                        <th>Booked Date</th>
+                        <th colspan="2" style="text-align: center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>';
             foreach ($rooms as $key => $room) {
                 echo "<tr>
                                          <td>" . ++$key . "</td>
@@ -95,6 +78,21 @@ if ($result->num_rows > 0) {
                                          </td>
                                      </tr>";
             }
+        }else{
+            echo'
+            <div class="filter-section">
+        <form method="GET" action="">
+            <div class="form-row">
+               
+
+               
+                    <h1 style="color:white;font-family:cursive" class="heading">No Room Available</h1>
+
+                
+            </div>
+        </form>
+    </div>';
+        }
             ?>
 
             <!-- More rows as needed -->
@@ -105,3 +103,11 @@ if ($result->num_rows > 0) {
 </div>
 
 </div>
+<script>
+
+    <?php if (isset($successfullyDeleted)): ?>
+        setTimeout(function() {
+            window.location.href = 'userTable.php'; 
+        },300);
+        <?php endif; ?>
+        </script>

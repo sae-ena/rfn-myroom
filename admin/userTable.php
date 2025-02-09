@@ -1,6 +1,6 @@
 <?php
 require "leftSidebar.php";
-require "dbConnect.php";  // Make sure this file contains the correct database connection
+require "dbConnect.php";  
 
 $query = "SELECT * from users where user_type != 'admin' ;";
 $result = $conn->query($query);
@@ -10,12 +10,12 @@ if(!$result) exit("Connection failed to fetch Data");
 //Delete Operation 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['roomUid'])) {
    $roomId = $_POST['roomUid'];
-    $query = "UPDATE rooms SET user_status = 'inActive' WHERE user_id = $roomId;";
+    $query = "UPDATE users SET user_status = 'inActive' WHERE user_id = $roomId;";
    $deleteResult = $conn->query($query);
 
    if(!$deleteResult) exit("Connection failed to fetch Data");
 
-   $successfullyDeleted = "RoomID : ".$roomId." has been deleted";
+   $successfullyDeleted = "User has been deleted";
 
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statusValue'])) {
@@ -52,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statusValue'])) {
                     <th>Number</th>
                     <th>Status</th>
                     <th>Location</th>
-                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -75,12 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statusValue'])) {
                        </form>
                     </td>
                     <td>".$room['user_location']."</td>
-                    <td>
-                        <form action=".  $_SERVER['PHP_SELF']." method='POST' >
-                        <input type='number' hidden value=".$room['user_id']." name='roomUid' /> 
-                        <button type='submit' class='delete-button'>Delete</button>
-                        </form>
-                    </td>
+                    
                 </tr>";
             }
                 

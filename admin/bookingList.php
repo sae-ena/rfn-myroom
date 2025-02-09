@@ -1,6 +1,7 @@
 <?php
 require "leftSidebar.php";
 require "dbConnect.php";
+ require('../helperFunction/InsertRoomData.php');
 
 $rooms = [];
 if ($_SERVER["REQUEST_METHOD"] === 'GET' && isset($_GET['room_id'])) {
@@ -43,40 +44,34 @@ if ($_SERVER["REQUEST_METHOD"] === 'GET' && isset($_GET['room_id'])) {
 
         // Update the status of the room
         $roomStatus = "inActive";
-        $query = "UPDATE rooms SET room_status = ? WHERE room_id = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("si", $roomStatus, $roomId);
-        $stmt->execute();
+        $query = "UPDATE rooms SET room_status = '$roomStatus' WHERE room_id = '$roomId'";
+        $sqlResult = InsertRoomData::insertData($query);
 
         // Update the status of the booking
-        $query = "UPDATE bookings SET status = ? WHERE booking_id = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("si", $status, $booking_id);
-        $stmt->execute();
+        $query = "UPDATE bookings SET status = '$status' WHERE booking_id = '$booking_id'";
+        $sqlResult = InsertRoomData::insertData($query);
 
-        $query2 = "UPDATE bookings SET status = ? WHERE status != ? AND room_id = ? ";
-        $stmt2 = $conn->prepare($query2);
-        $cancelStatus = "canceled";
-        // $stmt->bind_param("sis", $cancelStatus, $booking_id, $status)
-        $stmt2->bind_param('ssi',$cancelStatus,$status,$roomId);
-        $stmt2->execute();
-       
+        $query2 = "UPDATE bookings SET status = 'canceled' WHERE status != '$status' AND room_id = '$roomId';";
+        $sqlResult = InsertRoomData::insertData($query2);
 
     $successfullyApprove = "Booking approved successfully!";
+
+    header("Location:approve.php");
+    exit;
  
     }elseif(isset($_POST['booking_cancel_id'])) {
 
         $booking_id = $_POST['booking_cancel_id'];
         // Update the status of the booking
-        $query = "UPDATE bookings SET is_active = ? WHERE booking_id = ?";
-        $stmt = $conn->prepare($query);
         $Inactive=0;
-        $stmt->bind_param("si", $Inactive, $booking_id);
-        $stmt->execute();
-
+        $query = "UPDATE bookings SET is_active = '$Inactive' WHERE booking_id = '$booking_id'";
+        $sqlResult = InsertRoomData::insertData($query);
         $successfullyApprove = "Booking Cancelled successfully!";
-        header('Location: ' . $_SERVER['HTTP_REFERER']);
-        exit;
+        echo ' <div class="success-notify" >' . $successfullyApprove . '</div>';
+
+    // Wait for 3 seconds before redirecting
+    echo '<script>setTimeout(function(){ window.location.href = "' . $_SERVER['HTTP_REFERER'] . '"; }, 3000);</script>';
+    exit;
     }
 }
 
@@ -114,18 +109,24 @@ if (is_array($rooms) && count($rooms) == 0) {
         border-radius: 19px; width: 100%; height=100% " >';
                 } else {
                     echo ' <img src="uploads/67630b72ab163_jGandhi.png" alt="bookingRoom Image">';
-                }
-                echo ' </div>';
+                }echo ' </div>';
 
-                echo "<h2>Room Name:" . $rooms[0]['room_name'] . "</h2>
-                            <p>Description: " . $rooms[0]['room_description'] . "</p>
-                            <p>Price: " . $rooms[0]['room_price'] . " per month</p>";
+                echo "<h2 style='display:block;width:auto; background-color:rgb(111, 209, 50); color: black; border-radius: 19px; box-shadow: 0 4px 12px rgba(20, 13, 13, 0.3); text-transform: uppercase;outline: 1px solid white;text-shadow: 2px 2px 1pxrgb(230, 8, 8), -2px -2px 5px #ffffff, 2px -2px 5px #ffffff, -2px 2px 5px #ffffff; letter-spacing: 2px; font-size: 24px; margin-top: 50px; margin-bottom: 22px; padding: 20px 0; text-align: center;font-family: \'Roboto\', sans-serif;'>" . $rooms[0]['room_name'] . "</h2>";
+                
+                echo "<br>";
+                
+                echo "<p style='color:rgb(255, 255, 255); font-size: 22px; line-height: 1.6; text-align: center;font-family: \'Roboto\', sans-serif;'>Description: " . $rooms[0]['room_description'] . "</p>";
+                
+                echo "<p style='color:rgb(251, 255, 28); font-size: 23px; text-align: center; margin-top: 10px; font-family: \'Roboto\', sans-serif;'><span style='color:rgb(255, 0, 0);text-shadow: 2px 2px 1px #ffffff, -2px -2px 5px #ffffff, 2px -2px 5px #ffffff, -2px 2px 5px #ffffff; letter-spacing: 2px; font-weight: bold; font-size: 26px;'>Price: </span>" . $rooms[0]['room_price'] . " per month</p>
+                <br>";
+                
+                
                 ?>
           
 
             <!-- Booked Users Section -->
             <div class="booked-users">
-                <h3>Users who have booked this room:</h3>
+                <h3 style="display:block;padding-left:20px">Users who have booked this room:</h3>
 
                 <?php
                 foreach ($rooms as $user) {

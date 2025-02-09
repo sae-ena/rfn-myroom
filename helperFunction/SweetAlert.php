@@ -37,12 +37,12 @@
         function clearFormError() {
             setTimeout(function() {
                 document.querySelector('.danger-notify ').style.display = 'none';
-            }, 4000); // 10000 milliseconds = 10 seconds
+            }, 4900); // 10000 milliseconds = 10 seconds
         }
         function clearSuccessAlert() {
             setTimeout(function() {
                 document.querySelector('.success-notify ').style.display = 'none';
-            }, 4000); // 10000 milliseconds = 10 seconds
+            }, 4900); // 10000 milliseconds = 10 seconds
         }
     </script>
 <?php if (isset($form_error)): ?>

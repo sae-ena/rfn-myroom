@@ -2,10 +2,28 @@
 
 class RoomFetchForWebsite
 {
+
+    protected static $conn;
+    public static function initializeConnection()
+    {
+        if (self::$conn === null) {
+            if (file_exists('../admin/dbConnect.php')) {
+                self::$conn = require('../admin/dbConnect.php');
+            } elseif (file_exists('admin/dbConnect.php')) {
+                self::$conn = require('admin/dbConnect.php');
+            }
+
+            if (self::$conn === null) {
+                die("Error: Database connection not established.");
+            }
+        }
+    }
     public static function fetchRoomData($query)
     {
-        require('admin/dbConnect.php');
-        $result = $conn->query($query);
+    
+        self::initializeConnection();
+       
+        $result = self::$conn->query($query);
         if ($result->num_rows > 0) {
             $totalRooms = $result->num_rows;
             $rooms = [];
@@ -20,8 +38,8 @@ class RoomFetchForWebsite
     }
     public static function fetchBookingData($query)
     {
-        require('admin/dbConnect.php');
-        $result = $conn->query($query);
+        self::initializeConnection();
+        $result = self::$conn->query($query);
         if ($result->num_rows > 0) {
            return [
                 "success"=> false,
@@ -36,8 +54,8 @@ class RoomFetchForWebsite
     }
     public static function fetchExistingData($query)
     {
-        require('admin/dbConnect.php');
-        $result = $conn->query($query);
+        self::initializeConnection();
+        $result = self::$conn->query($query);
         if ($result->num_rows > 0) {
            return [
                 "success"=> true,

@@ -2,7 +2,7 @@
 require "leftSidebar.php";
 require "dbConnect.php";
 // Fetch data from the ROOMS table
-$query = "SELECT r.*
+$query = "SELECT DISTINCT r.*
 FROM rooms r
 LEFT JOIN bookings b ON r.room_id = b.room_id AND b.status = 'pending'
 WHERE r.room_status = 'active'
@@ -49,7 +49,8 @@ if ($result->num_rows > 0) {
         </div>';
                 }
             }else{
-                echo '<h1 style="color:white;font-family:cursive" class="for-heading">No Room Available</h1>';
+                echo '<h1 style="color:white; font-family:cursive; text-align:center; background-color:transparency; padding: 200px;" class="heading">No Room Available</h1>';
+
             }
                 ?>
               

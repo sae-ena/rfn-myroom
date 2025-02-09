@@ -1,7 +1,7 @@
 <footer>
   <div class="footer-container">
     <div class="footer-section">
-      <h4>Room Finder</h4>
+      <h4>Casabo Room Finder</h4>
       <p>Your go-to app for finding and booking rooms online.</p>
     </div>
     
@@ -28,10 +28,21 @@
   </div>
   
   <div class="footer-bottom">
-    <p>&copy; 2024 Room Finder. All Rights Reserved.</p>
+    <p>&copy; 2025 Room Finder. All Rights Reserved.</p>
   </div>
 </footer>
 <?php
+if (isset($searchResult) && is_array($searchResult)) {
+  // Instead of reloading the page, just scroll to the element with ID 'roomsTitleSearch'
+  echo "<script>
+          window.onload = function() {
+              document.getElementById('roomsTitleSearch').scrollIntoView({
+                  behavior: 'smooth', // Smooth scrolling
+                  block: 'start' // Scroll to the top of the element
+              });
+          }
+        </script>";
+}
 require('helperFunction/SweetAlert.php');
 ?>
 <script>

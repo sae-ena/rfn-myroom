@@ -70,13 +70,13 @@ body {
 }
 
 .add-room-button {
-    background-color: #00ff0d;
+    background-color: #00c60a;
     color: white;
     border: none;
     padding: 10px 20px;
-    font-size: 16px;
+    font-size: 19px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 15px;
     text-decoration: none;
 }
 

@@ -1,5 +1,6 @@
 <?php
 require "leftSidebar.php";
+require('../helperFunction/helpers.php');
 require "dbConnect.php";
 $formTitle ="Add New Room Listing";
 $roomTitle = $roomLocation = $roomPrice = $roomStatus = $roomType = $roomDescription = $roomImage = "";$new_file_name="";
@@ -39,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['room_image']['name']) && $_FILES['room_image']['size'] > 0 ){
 
 
-
         // Get the file details
         $file_name = $_FILES['room_image']['name'];
         $file_tmp = $_FILES['room_image']['tmp_name'];
@@ -54,13 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validate file size
         if ($file_size > $max_file_size) {
             $validationError =  "Error: File size exceeds the maximum limit of 5 MB.";
-            exit;
+        
         }
     
         // Validate file type
         if (!in_array(mime_content_type($file_tmp), $allowed_types)) {
             $validationError = "Error: Only JPEG, PNG, and GIF files are allowed.";
-            exit;
+          
         }
     
         // Generate a unique name for the file to avoid conflicts
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $upload_path = $upload_dir . $new_file_name;
     
         // Move the uploaded file to the desired directory
-        move_uploaded_file($file_tmp, $upload_path);
+         move_uploaded_file($file_tmp, $upload_path);
     } 
     
 
@@ -92,9 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if(is_numeric($EditMode)){
 
-        
-    if (!isset($form_error)) {
-        $imagePath = $_POST['previousImagePath'] ?? $new_file_name;
+    if (! isset($form_error)) {
+        $imagePathPrevious = convertToNullIfEmpty($_POST['previousImagePath']);
+        $imagePath = $imagePathPrevious ?? $new_file_name;
         $query = "UPDATE rooms SET room_name = ?, room_location = ?, room_price = ?, room_type = ?, room_status = ?, room_description = ?, room_image = ? WHERE room_id = ?;";
         if ($stmt = $conn->prepare($query)) {
             $stmt->bind_param("ssdssssi", $roomTitle, $roomLocation, $roomPrice, $roomType, $roomStatus, $roomDescription, $imagePath, $EditMode);
@@ -139,24 +139,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 ?>
-<?php if (isset($form_error)): ?>
-    <div class="danger-notify">
-        <span><?php echo $form_error; ?></span>
-    </div>
-<?php endif; ?>
 <?php if (isset($validationError)): ?>
     <div class="danger-notify">
         <span><?php echo $validationError; ?></span>
     </div>
 <?php endif; ?>
 
-<?php if (isset($successfullyRoomAdded)): ?>
-    <div class="success-notify">
-        <span><?php echo $successfullyRoomAdded; ?></span>
-    </div>
-<?php endif; ?>
+
 <div class="dashboard-content">
-    <div class="form-container"
+<?php require('../helperFunction/SweetAlert.php'); ?>   
+<div class="form-container"
         style="margin-left: 260px; padding: 5px; display: flex; justify-content: center; align-items: center;">
         <form id="room-form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" enctype="multipart/form-data">
             <h1><?php echo $formTitle ;?></h1>

@@ -1,16 +1,13 @@
 <?php
 // Define the PHP code that we want to encrypt
-$plain_code = '<?php 
-$host = "mysql-29620eed-kidssujal-9bd8.j.aivencloud.com"; 
-$username = "avnadmin";
-$password = "AVNS_1N9Dr_M5lJZIRxcd8gj"; 
+$plain_code = 
+// $host = "mysql-29620eed-kidssujal-9bd8.j.aivencloud.com"; 
+// $username = "avnadmin";
+// $password = "AVNS_1N9Dr_M5lJZIRxcd8gj"; 
 $dbname = "rf_db";
 $portNo = 18250;
 
 $conn = new mysqli($host, $username, $password, $dbname,$portNo);
-?>
-
-    ';
 
 // Define a secret key and IV (Initialization Vector) for encryption
 $encryption_key = 'my_secret_key785765';  // A secret key to encrypt the data
