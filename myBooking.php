@@ -1,17 +1,35 @@
 <?php
-require('helperFunction/userAuth.php');
 require('helperFunction/InsertRoomData.php');
+if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['cancelRequest'])) {
+    $bookingId = $_POST['booking_id'];
+    $query = "UPDATE bookings SET is_active = 0 WHERE booking_id = $bookingId;";
+    //isActive 0 means user have caceled his self booking
+    $bookingResult1 = InsertRoomData::insertData($query);
+    if (strpos($_SERVER['HTTP_REFERER'], "http://localhost:8000/booking_details.php?") !== false) {
+        $response = [
+            'status' => 'success',
+            'message' => 'Successfully Canceled Booking',
+            'booking_id' => $bookingId,
+        ];
+        echo '<script type="text/javascript">
+        // Set localStorage to show modal
+        localStorage.setItem("showModalRoomCanceled", "true");
+        // Redirect back to the referring page
+        window.location.href = "' . $_SERVER['HTTP_REFERER'] . '";
+      </script>';
+exit();// Stop further execution
+    }
+    $successfullyRoomAdded = "Succesfully Canceled Booking";
+}
+require('helperFunction/userAuth.php');
 require('header.php');
 ?>
 <style>
     /* Style the status filter form */
     .status-filter-form {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
         margin-bottom: 20px;
-        padding: 10px;
-        background-color: #f8f9fa;
+        padding: 5px;
+        background-color:rgb(255, 141, 2);
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
@@ -19,6 +37,7 @@ require('header.php');
     .status-filter-form label {
         font-size: 1rem;
         margin-right: 10px;
+        
     }
 
     .status-filter-form select {
@@ -26,6 +45,8 @@ require('header.php');
         font-size: 1rem;
         border-radius: 5px;
         border: 1px solid #ddd;
+        background-color: whitesmoke;
+        color: black;
     }
 
     .status-filter-form .filter-button {
@@ -196,16 +217,9 @@ require('header.php');
 <?php
 
 
-if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['cancelRequest'])) {
-    $bookingId = $_POST['booking_id'];
-    $query = "UPDATE bookings SET is_active = 0 WHERE booking_id = $bookingId;";
-    $bookingResult1 = InsertRoomData::insertData($query);
-    $successfullyRoomAdded = "Succesfully Canceled Booking";
-}
-
 if (isset($_GET['status']) && ($_GET['status'] === "pending" || $_GET['status'] === "confirmed" || $_GET['status'] === "canceled")) {
     $bookingStatus = $_GET['status'];
-    $query = "SELECT   r.room_name, r.room_image, r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id
+    $query = "SELECT r.room_id,r.room_status,  r.room_name, r.room_image, b.is_active,r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id
         FROM bookings b
         JOIN users u ON b.user_id = u.user_id
         JOIN rooms r ON b.room_id = r.room_id
@@ -213,7 +227,7 @@ if (isset($_GET['status']) && ($_GET['status'] === "pending" || $_GET['status'] 
 
 } else {
 
-    $query = "SELECT   r.room_name, r.room_image, r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id
+    $query = "SELECT r.room_id , r.room_status,r.room_name, r.room_image,b.is_active, r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id
                 FROM bookings b
                 JOIN users u ON b.user_id = u.user_id
                 JOIN rooms r ON b.room_id = r.room_id
@@ -221,24 +235,16 @@ if (isset($_GET['status']) && ($_GET['status'] === "pending" || $_GET['status'] 
 }
 
 $result = $conn->execute_query($query);
-?>
-<form action="myBooking.php" method="GET" class="status-filter-form">
-    <label for="status-select">Filter by Status:</label>
-    <select name="status" id="status-select">
-        <option value="">All</option>
-        <option value="confirmed" <?php if (isset($_GET['status']) && $_GET['status'] == 'confirmed')
-            echo 'selected'; ?>>
-            Confirmed
-        </option>
-        <option value="pending" <?php if (isset($_GET['status']) && $_GET['status'] == 'pending')
-            echo 'selected'; ?>>
-            Pending</option>
-        <option value="canceled" <?php if (isset($_GET['status']) && $_GET['status'] == 'canceled')
-            echo 'selected'; ?>>
-            Canceled</option>
-    </select>
-    <button type="submit" class="filter-button">Filter</button>
+?><form action="myBooking.php" method="GET" class="status-filter-form" style=" align-items: flex-start; gap: 15px; padding: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); max-width: 300px; width: 100%; margin: 0 auto;">
+<label for="status-select" style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 5px;">Filter by Status:</label>
+<select name="status" id="status-select" onchange="this.form.submit()" style="padding: 10px; font-size: 14px; border-radius: 8px; border: 1px solid #ddd; transition: all 0.3s ease;">
+    <option value="" style="color: #777;">All</option>
+    <option value="confirmed" <?php if (isset($_GET['status']) && $_GET['status'] == 'confirmed') echo 'selected'; ?> style="">Confirmed</option>
+    <option value="pending" <?php if (isset($_GET['status']) && $_GET['status'] == 'pending') echo 'selected'; ?> style="">Pending</option>
+    <option value="canceled" <?php if (isset($_GET['status']) && $_GET['status'] == 'canceled') echo 'selected'; ?> style="">Canceled</option>
+</select>
 </form>
+
 <div class="bookings-container">
     <?php
     if ($result->num_rows > 0) {
@@ -246,7 +252,7 @@ $result = $conn->execute_query($query);
             ?>
             <div class="booking-card">
                 <?php
-                echo '<img src="admin/uploads/' . $row["room_image"] . '" alt="Room Image" class="room-image">';
+                echo '<img src="admin/' . $row["room_image"] . '" alt="Room Image" class="room-image">';
                 ?>
                 <div class="card-content">
                     <h3 class="room-name"><?= $row['room_name'] ?></h3>
@@ -254,15 +260,16 @@ $result = $conn->execute_query($query);
                         <?= (strlen($row['room_description']) > 220) ? substr($row['room_description'], 0, 220) . '...' : $row['room_description'] ?>
                     </div>
                     <p class="booking-date">Booked on: <?= $row['booking_date'] ?></p>
-                    <p class="room-price">Price: $<?= $row['room_price'] ?></p>
+                    <p class="room-price">Price: Rs <?= $row['room_price'] ?></p>
                     <p class="status <?= strtolower($row['status']) ?>"><?= ucfirst($row['status']) ?></p>
 
                     <div class="parentBtn">
 
-                        <a href="booking_details.php?booking_id=<?= $row['booking_id'] ?>" class="view-details">View
+                    <?php if ($row['room_status'] !== 'inActive' || $row['status'] !== "canceled" ) { ?>
+                        <a href="booking_details.php?booking_id=<?= $row['room_id'] ?>" class="view-details">View
                             Details</a>
+                            <?php } ?>
                         <div class="right-content">
-
                             <!-- Cancel button, only visible if booking is not yet canceled -->
                             <?php if ($row['status'] === 'pending') { ?>
                                 <form action="<?php $_SERVER['PHP_SELF'] ?>" method="POST">
@@ -278,9 +285,18 @@ $result = $conn->execute_query($query);
             <?php
         }
     } else {
-        echo '<div class="warning-message">
-        No Room yet .
-    </div>';
+        if(isset($_GET['status']) && $_GET['status'] == "pending"){
+     echo '<div class="warning-message" style="background-color: #FFEB3B; color: #333; padding: 15px 25px; border-radius: 8px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-width: 500px; margin: 20px auto; border: 1px solid #FBC02D; text-align: center;">
+    <span style="margin-right: 10px; font-size: 20px; color: #F57C00;">⚠️</span>
+      You have not booked a room yet. Please make a reservation to proceed.
+</div>';
+        }else{
+            echo '<div class="warning-message" style="background-color:rgb(255, 230, 0); color: #333; padding: 15px 25px; border-radius: 8px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-width: 500px; margin: 20px auto; border: 1px solid #FBC02D; text-align: center;">
+            <span style="margin-right: 10px; font-size: 20px; color: #F57C00;">⚠️</span>
+             Currently, there are no rooms available. Please check back later.
+        </div>';
+        }
+
     }
 
     require('helperFunction/SweetAlert.php');

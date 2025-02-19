@@ -32,7 +32,7 @@ if ($result->num_rows > 0) {
             <div class="bookingRoom-image">
                 <span class="for-bookRequest">Booking Request</span>';
                 if($room["room_image"] != null){
-                    echo '<img src="uploads/'.$room["room_image"].'" alt="bookingRoom Image">';}
+                    echo '<img src="'.$room["room_image"].'" alt="bookingRoom Image">';}
                 else{
                  echo ' <img src="uploads/67630b72ab163_jGandhi.png" alt="bookingRoom Image">';
                 }

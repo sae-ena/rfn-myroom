@@ -35,6 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $roomStatus = mysqli_real_escape_string($conn, $_POST['status']);
     $roomType = mysqli_real_escape_string($conn, $_POST['type']);
     $roomDescription = mysqli_real_escape_string($conn, $_POST['description']);
+    $imagePath = mysqli_real_escape_string($conn, $_POST['room_image']);
+    $new_file_name = mysqli_real_escape_string($conn, $_POST['room_image']);
     if(isset($_POST['enabledEdit']))  $EditMode = mysqli_real_escape_string($conn, $_POST['enabledEdit']);
     
     if (isset($_FILES['room_image']['name']) && $_FILES['room_image']['size'] > 0 ){
@@ -93,8 +95,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if(is_numeric($EditMode)){
 
     if (! isset($form_error)) {
-        $imagePathPrevious = convertToNullIfEmpty($_POST['previousImagePath']);
-        $imagePath = $imagePathPrevious ?? $new_file_name;
+        // $imagePathPrevious = convertToNullIfEmpty($_POST['previousImagePath']);
+        // $imagePath = $imagePathPrevious ?? $new_file_name;
         $query = "UPDATE rooms SET room_name = ?, room_location = ?, room_price = ?, room_type = ?, room_status = ?, room_description = ?, room_image = ? WHERE room_id = ?;";
         if ($stmt = $conn->prepare($query)) {
             $stmt->bind_param("ssdssssi", $roomTitle, $roomLocation, $roomPrice, $roomType, $roomStatus, $roomDescription, $imagePath, $EditMode);
@@ -141,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <?php if (isset($validationError)): ?>
     <div class="danger-notify">
-        <span><?php echo $validationError; ?></span>
+        <span id="errorMessage"><?php echo $validationError; ?></span>
     </div>
 <?php endif; ?>
 
@@ -173,21 +175,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <select id="room-type" name="type">
         <option value="1BHK" <?= htmlspecialchars($roomType) == "1BHK" ? 'selected' : '' ?>>1 BHK</option>
         <option value="2BHK" <?= htmlspecialchars($roomType) == "2BHK" ? 'selected' : '' ?>>2 BHK</option>
-        <option value="Single Room" <?= htmlspecialchars($roomType) == "Single Room" ? 'selected' : '' ?>>Single Room</option>
-        <option value="Studio" <?= htmlspecialchars($roomType) == "Studio" ? 'selected' : '' ?>>Studio</option>
-        <option value="Shared Room" <?= htmlspecialchars($roomType) == "Shared Room" ? 'selected' : '' ?>>Shared Room</option>
-        <option value="Entire Apartment" <?= htmlspecialchars($roomType) == "Entire Apartment" ? 'selected' : '' ?>>Entire Apartment</option>
+        <option value="singleRoom" <?= htmlspecialchars($roomType) == "singleRoom" ? 'selected' : '' ?>>Single Room</option>
+        <option value="apartment" <?= htmlspecialchars($roomType) == "apartment" ? 'selected' : '' ?>> Apartment</option>
     </select>
-
-
-            <!-- Upload Photos -->
-            <label for="photos">Upload Photos:</label>
-            <?php if(isset($roomImage)){
-                 echo'  <img src="/admin/uploads/'.$roomImage.'" alt="" style="width: 100px; height: auto;">
-                 <input type="text" hidden name="previousImagePath" value="'.$roomImage.'" >
-             ';
-            }?>
-            <input type="file" id="photos" name="room_image" accept="image/*" >
+            
+            <!-- <input type="file" id="photos" name="room_image" accept="image/*" > -->
+            <label for="selected-image">Image :</label>
+            <div style="display: flex; align-items: center;">
+    <?php if (!empty($roomImage)): ?>
+        <img src="<?php echo $roomImage ?>" alt="room image" style="width: 90px; height: 100px; margin-left: 10px;"/>
+    <?php endif; ?>
+</div>
+<!-- This is the text input where the selected image path will be shown -->
+<input type="text" id="selectedImage" name="room_image" value="<?= htmlspecialchars($roomImage) ?>" readonly placeholder="Double click on an image to select it">
+ <!-- Upload Photos Button -->
+ <button type="button" class="upload-btn" onclick="showImageUploadModal()">Upload Photo</button>
 
             <!-- Description -->
             <label for="description">Description:</label>
@@ -206,6 +208,230 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
 </div>
+<div id="imageUploadModal" class="modal">
+    <div class="modal-content">
+    <span class="close" onclick="closeImageUploadModal()">&times;</span>
+    <h2>Upload Image</h2>
+    <form id="imageUploadForm" method="post" enctype="multipart/form-data">
+        <input type="file" id="photos" name="room_image" accept="image/*">
+        <input type="text" name="status" value="0" hidden>
+        <button type="submit" id="imageUploadBtn">Upload</button>
+    </form>
+</div>
+
+<!-- Result Div -->
+<div id="resultRoom">
+
+              
+                <?php
+                $query = "Select * from media ORDER BY created_at desc;";
+                $resultMedia = mysqli_query($conn,$query);
+                if(mysqli_num_rows($resultMedia) > 0){
+                    $index =0;
+                    while($rows = mysqli_fetch_assoc($resultMedia)){
+                        echo '<div class="mediaImg" style="padding: 10px; border: 1px solid #ddd; display: inline-block; margin: 10px;">
+                          <input type="text" hidden name="image_path" id="imgPath" value ="'.$rows["image_path"].'">
+                                <img src="/admin/'. $rows["image_path"] .'" alt="Image" style="width: 220px; height: 160px; object-fit: cover; border-radius: 8px;">
+                              </div>';
+                    }
+                } else {
+                    echo "<h2 style='text-align: center; color: #333;'>NO IMAGE UPLOADED</h2>";
+                }
+                
+
+                ?>
+                <!-- Modal structure -->
+<div id="errorModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000;">
+    <div style="position: relative; margin: 20% auto; background-color: #fff; padding: 20px; width: 300px; border-radius: 5px; text-align: center;">
+        <h3 style="color: #e74c3c;">Error</h3>
+        <p id="errorMessage" style="color: #e74c3c;"></p>
+        <button onclick="closeErrorModal()" style="background-color: #e74c3c; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 3px;">Close</button>
+    </div>
+</div>
+<div id="successModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000;">
+    <div style="position: relative; margin: 20% auto; background-color: #fff; padding: 20px; width: 300px; border-radius: 5px; text-align: center;">
+        <h3 style="color:rgb(84, 194, 0);">Success</h3>
+        <br>
+        <br>
+        <h4 id="successMessage" style="color:rgb(2, 0, 0);"></h4>
+
+    </div>
+</div>
+                
+        
+            </div>
 </body>
+
+<!-- Add your custom JavaScript here -->
+<script>
+// Show the image upload modal
+function showImageUploadModal() {
+    document.getElementById("imageUploadModal").style.display = "block";
+}
+
+// Close the image upload modal
+function closeImageUploadModal() {
+    document.getElementById("imageUploadModal").style.display = "none";
+}
+window.onload = function() {
+    
+    if (localStorage.getItem("showModal") === "true") {
+        // Show the modal automatically
+        document.getElementById("imageUploadModal").style.display = "block";
+        
+        // Clear the flag so the modal doesn't show again after another reload
+        localStorage.removeItem("showModal");
+    }
+};
+// Close modal if clicked outside
+window.onclick = function(event) {
+    var modal = document.getElementById("imageUploadModal");
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+const imgElements = document.getElementsByClassName("mediaImg");
+
+// Loop through each element and add the event listener
+Array.from(imgElements).forEach(imgDiv => {
+    imgDiv.addEventListener("dblclick", (e) => {
+        const imgDiv = e.currentTarget;
+        
+        // Access the hidden input field inside the clicked div
+        const imgPathInput = imgDiv.querySelector("input[name='image_path']");
+        
+        // Get the value of the hidden input
+        const imagePath = imgPathInput.value;
+        document.getElementById("selectedImage").value=imagePath;
+        var modal = document.getElementById("imageUploadModal");
+   
+        modal.style.display = "none";
+        
+    });
+});
+function showErrorModal() {
+    // Display the modal
+    document.getElementById("errorModal").style.display = "block";
+}
+function closeErrorModal() {
+    document.getElementById("errorModal").style.display = "none";
+}
+function showSuccessImageUploadModal() {
+    // Display the modal
+    document.getElementById("successModal").style.display = "block";
+    localStorage.setItem("showModal", "true");
+    setTimeout(function() {
+        window.location.reload();  // Reload the page
+    }, 1000); 
+}
+document.getElementById('imageUploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();  // Prevent the form from submitting the traditional way
+
+    const fileInput = document.getElementById('photos');
+    const file = fileInput.files[0];
+
+    const form =this;
+    // Validate if a file has been selected
+    if (!file) {
+        return false; // Stop the submission if no file is selected
+    }
+    // Get the form data, including the file input
+    const formData = new FormData(this);
+
+   
+
+    // Send the form data via Fetch API
+    fetch('addMedia.php', {
+        method: 'POST',
+        body: formData  // Form data includes the file input and other form fields
+    })
+    .then(response => response.text())  // We expect a text response from PHP
+    .then(data => {
+        // form.reset();
+        res=data.includes("Connection failed to upload image");
+if(res){
+    document.getElementById("errorMessage").textContent = "Image has been uploaded already.";
+    showErrorModal();
+    return;
+}
+document.getElementById("successMessage").textContent = "Image has been uploaded .";
+        //window.location.href="form.php"; 
+        showSuccessImageUploadModal();
+        // document.getElementById('result').innerHTML = data; 
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
+
+
+
+</script>
+
+<!-- Add some basic CSS for the modal -->
+<style>
+.modal {
+    display: none;  /* Hidden by default */
+    position: absolute;
+    z-index: 1;  /* Sit on top */
+    right: 140px;
+    top: 20px;
+    width: 70%;
+    padding-top: 60px;
+    color: white;
+}
+
+.modal-content {
+    background-color:rgb(108, 235, 112);
+    padding: 0 200px 0 100px;
+    border: 31px solid rgb(106, 229, 110) ;
+    border-radius: 35px 29px;
+    width: 70%; /* Adjust depending on screen size */
+    position: relative; /* Positioning to center it */
+    top: 60px;
+    left: 50%; /* Move to the middle horizontally */
+    transform: translate(-50%, -50%); /* Offset by half of the element’s width and height to truly center it */
+    box-sizing: border-box; /* Ensures the padding doesn’t affect the overall width */
+}
+.close {
+    background-color: rgba(255, 255, 255, 0.8); 
+    border-radius: 50px;/* Black w/ opacity */
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute; /* Or you could use float: right; */
+    top: 10px; /* Adjust as needed */
+    right: 10px; /* Align to the right */
+    padding: 3px;
+    cursor: pointer; /* Makes the button look clickable */
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+#resultRoom{
+    position: relative;
+    top: 0px;
+    background-color: rgb(255, 255, 255,0.8); /* Black w/ opacity */
+    border-radius: 28px;
+}
+.upload-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+}
+
+.upload-btn:hover {
+    background-color: #45a049;
+}
+</style>
 
 </html>

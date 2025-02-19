@@ -64,7 +64,7 @@ if ($result->num_rows > 0) {
             foreach ($rooms as $key => $room) {
                 echo "<tr>
                                          <td>" . ++$key . "</td>
-                                         <td> <img src='uploads/" . $room['room_image'] . "' alt='room image' style='width: 100px; height: 100px;'></td>
+                                         <td> <img src='" . $room['room_image'] . "' alt='room image' style='width: 100px; height: 100px;'></td>
                                          <td>" . $room['room_name'] . "</td>
                                          <td>" . $room['room_location'] . "</td>
                                          <td>" . $room['user_name'] . "</td>

@@ -1,11 +1,10 @@
 <?php require('header.php') ; 
-require_once('helperFunction/helpers.php');
 
 ?>
 <?php 
 if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
     $searchLocation = $_GET['searchLocation'];
-    $searchType = $_GET['searchRoomType'];
+    $searchType = $_GET['searchRoomType'] ?? "";
     $searchResult = getRoomData($searchLocation,$searchType);
     if(! $searchResult){
        $form_error = "No Room Found"; 
@@ -24,8 +23,9 @@ if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
         <form method="get"action="<?php echo $_SERVER['PHP_SELF'];?>">
         <input type="text" name="searchLocation" placeholder="Enter Location" class="location-input" />
         <select class="room-type-input" name="searchRoomType">
-            <option value="single">Single Room</option>
-            <option value="double">Double Room</option>
+            <option value="" selected disabled>Room Type</option>
+            <option value="singleRoom">Single Room</option>
+            <option value="2BHK">Double Room</option>
             <option value="1BHK">1BHK</option>
             <option value="apartment">Apartment</option>
         </select>
@@ -118,7 +118,7 @@ $result = $conn->query($query);
         <?php if ($result->num_rows > 0): ?>
             <?php while ($media = $result->fetch_assoc()): ?>
                 <div class="gallery-item">
-                    <img src="/admin/<?php echo $media['image_path']; ?>" alt="Gallery Image" width="100%" />
+                    <img src="/admin/<?php echo $media['image_path']; ?>" alt="Gallery Image"  />
                 </div>
             <?php endwhile; ?>
         <?php else: ?>
@@ -132,7 +132,27 @@ $result = $conn->query($query);
 
 
 
+<script>
+  window.onload = function() {
+    var image = document.querySelector('.gallery-item img');
+    var container = document.querySelector('.gallery-item');
 
+    function adjustImageFit() {
+      var imageRatio = image.naturalWidth / image.naturalHeight;
+      var containerRatio = container.offsetWidth / container.offsetHeight;
+
+      // If the image ratio is greater than the container ratio, use contain
+      if (imageRatio > containerRatio) {
+        image.style.objectFit = 'contain';
+      } else {
+        image.style.objectFit = 'cover';
+      }
+    }
+
+    adjustImageFit(); // Adjust on page load
+    window.onresize = adjustImageFit; // Adjust on window resize
+  }
+</script>
     <?php require('roomData.php'); ?>
 
 <?php require('footer.php') ; ?>

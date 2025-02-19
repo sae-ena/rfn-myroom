@@ -51,7 +51,7 @@ if ($result->num_rows > 0) {
                               
                                  <div class="approve-image">';
                                  if($user["room_image"] != null){
-                                     echo '<img src="uploads/'.$user["room_image"].'" alt="bookingRoom Image" style="width:100%";height:auto;object-fit:cover;>';}
+                                     echo '<img src="'.$user["room_image"].'" alt="bookingRoom Image" style="width:100%";height:auto;object-fit:cover;>';}
                                  else{
                                   echo ' <img src="uploads/67630b72ab163_jGandhi.png" alt="bookingRoom Image">';
                                  }

@@ -11,9 +11,11 @@ if ($result->num_rows > 0) {
     // Store the result in an array (optional if you need to manipulate later)
     $rooms = [];
     while ($row = $result->fetch_assoc()) {
+      
         $activeRooms = $row['activeCount'];
         $rooms[] = $row;
     }
+    $inActiveRoom = $totalRooms - $activeRooms;
 } 
 ?>
 
@@ -40,7 +42,7 @@ if ($result->num_rows > 0) {
                 </div>
                 <div class="card">
                     <h3>Inactive Listings</h3>
-                    <p>5</p>
+                    <p><?php echo $inActiveRoom?></p>
                 </div>
             </div>
 

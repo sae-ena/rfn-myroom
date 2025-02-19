@@ -1,9 +1,30 @@
 
 
+/* Apply a smooth background color animation to the entire body */
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #ff9966, #ff5e62);
+    background: linear-gradient(135deg, #ff9966, #e7d8d8); /* Initial background color */
     color: rgb(241, 78, 9);
+    animation: backgroundColorChange 12s ease-in-out infinite; /* Apply animation */
+}
+
+/* Keyframes for background color animation */
+@keyframes backgroundColorChange {
+    0% {
+        background: linear-gradient(135deg, #ff9966, #e7d8d8);
+    }
+    25% {
+        background: linear-gradient(135deg, #ff6347, #e7d8e7); /* Change to a new color */
+    }
+    50% {
+        background: linear-gradient(15deg, #8e44ad, #f89c08); /* Change to another color */
+    }
+    75% {
+        background: linear-gradient(135deg, #bc8b1a, #f18b0f); /* Another new color */
+    }
+    100% {
+        background: linear-gradient(135deg, #ff9966, #e7d8d8); /* Back to the original color */
+    }
 }
 
 .form-wrapper {

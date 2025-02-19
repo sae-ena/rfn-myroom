@@ -12,6 +12,7 @@
 <body>
   <?php
 require("helperFunction/SweetAlert.php");
+require_once('helperFunction/helpers.php');
   if (!isset($_SESSION)) {
     session_start();
   }
@@ -36,7 +37,7 @@ require("helperFunction/SweetAlert.php");
           echo '<li class="dropdown">
                                    <a href="#" class="dropbtn" style="background-color:rgb(255, 115, 0); color: white; font-size: 16px; font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; padding: 10px 20px; border-radius: 5px;">' . $_SESSION['user_name'] . '</a>
                   <div class="dropdown-content">
-                    <a href="login" id="logoutBtn" style="color:rgb(255, 0, 0);">Logout</a>
+                    <a href="http://localhost:8000/login" id="logoutBtn" style="color:rgb(225, 255, 0);">Logout</a>
                   </div>
 
                 </li>';

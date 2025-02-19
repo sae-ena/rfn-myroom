@@ -6,6 +6,7 @@ class InsertRoomData
     {
         if(file_exists('../admin/dbConnect.php' )) require('../admin/dbConnect.php');
         if(file_exists('admin/dbConnect.php' )) require('admin/dbConnect.php');
+      
         if ($conn->query($query) === TRUE) {
             return "Success! Your update was saved.";
         } else {

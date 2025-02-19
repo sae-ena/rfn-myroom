@@ -8,6 +8,38 @@
   box-sizing: border-box;
   font-family: 'Arial', sans-serif;
 }
+.gallery_section {
+  padding: 50px 20px; /* Make the gradient larger for smoother transitions */
+  animation: gradientAnimation 8s ease infinite; /* Gradient color animation */
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Slight shadow for depth */
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 0% 100%;
+  }
+  75% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Hover effect */
+.gallery_section:hover {
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
+}
+
 
 body {
   background-color: #f7f7f7;
@@ -38,9 +70,11 @@ h2, h4, h5 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
+  max-width: 1290px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0px 0px;
+  
+  
 }
 
 
@@ -313,15 +347,82 @@ h2, h4, h5 {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 10px;
-  padding: 20px;
-  border: 22px solid linear-gradient(45deg, #ee0505, #feb47b);
+  margin-top: 0px;
+  padding: 10px;
+  border: 22px solid;
+  border-image: linear-gradient(45deg, #ff6a00, #3f87a6, #ff9d47) 1; /* Animated border gradient */
   border-radius: 21px 12px;
   position: relative;
   background: linear-gradient(45deg, #ff7f50, #f3f2f2); /* Gradient background */
-  animation: gradientAnimation 5s infinite alternate; /* Gradient color animation */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Shadow for a pop-up effect */
+  background-size: 400% 400%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 10px 20px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+  overflow: hidden;
 }
+
+/* Background Gradient Animation */
+@keyframes gradientBackground {
+  0% {
+    background: linear-gradient(45deg, #ff7f50, #f3f2f2);
+    background-position: 0% 50%;
+  }
+  50% {
+    background: linear-gradient(45deg, #ff6347, #ff4500);
+    background-position: 100% 50%;
+  }
+  100% {
+    background: linear-gradient(45deg, #ff1493, #ff6347);
+    background-position: 0% 50%;
+  }
+}
+
+/* Border Animation */
+@keyframes borderAnimation {
+  0% {
+    border-image: linear-gradient(45deg, #ff6a00, #3f87a6, #ff9d47) 1;
+  }
+  50% {
+    border-image: linear-gradient(45deg, #f8c611, #78f896, #ff0080) 1;
+  }
+  100% {
+    border-image: linear-gradient(45deg, #ff6a00, #3f87a6, #ff9d47) 1;
+  }
+}
+
+
+
+/* Pseudo-element effect for additional visual depth */
+.container-aboutUs::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 130%;
+  height: 130%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+/* Hover effect for pseudo-element */
+.container-aboutUs:hover::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Additional smooth scaling and transition for text (if you have text inside) */
+.container-aboutUs h1,
+.container-aboutUs p {
+  font-size: 1.2rem;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  transition: transform 0.4s ease-in-out, color 0.5s ease;
+}
+
+.container-aboutUs:hover h1,
+.container-aboutUs:hover p {
+  transform: scale(1.1); /* Slight zoom in for text */
+  color: #f37405; /* Change color on hover */
+}
+
  .imageSection {
   gap: px;
   width: 1200px;
@@ -334,6 +435,78 @@ h2, h4, h5 {
 /* Interior Info Section */
 .interior-info-section {
   padding: 50px 20px;
+  background: linear-gradient(135deg, #3f87a6, #ff9d47, #ff6a00);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite, shadowPulse 2s infinite alternate; /* Gradient and shadow animations */
+  border-radius: 15px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+/* Animated Gradient */
+@keyframes gradientShift {
+  0% {
+    background: linear-gradient(135deg, #3f87a6, #ff9d47, #ff6a00);
+    background-position: 0% 50%;
+  }
+  50% {
+    background: linear-gradient(135deg, #ff6347, #ff4500, #ff9d47);
+    background-position: 100% 50%;
+  }
+  100% {
+    background: linear-gradient(135deg, #8e2de2, #e07b00, #ff1493);
+    background-position: 0% 50%;
+  }
+}
+
+/* Shadow Pulse Animation */
+@keyframes shadowPulse {
+  0% {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  }
+  100% {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+}
+
+
+
+/* Pseudo-element to create a glowing halo effect */
+.interior-info-section::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 1.5s ease-in-out;
+  z-index: -1;
+}
+
+
+
+/* Text Scaling and Color Transition */
+.interior-info-section h2,
+.interior-info-section p {
+  font-size: 1.5rem;
+  color: white;
+  font-weight: 500;
+  text-align: center;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.interior-info-section:hover h2,
+.interior-info-section:hover p {
+  transform: scale(1.0); /* Text zoom effect */
+  color: #ff9d47; /* Text color change on hover */
 }
 
 .interior-info-section .title h4 {
@@ -370,20 +543,57 @@ h2, h4, h5 {
 
 .gallery_section{
 
-  background-color: rgb(139, 98, 125);
+  /* background-color:  */
 } 
+/* .gallery-grid {
+  padding: 50px 20px;
+  background: linear-gradient(45deg, #ff7f50, #32cd32, #1e90ff, #ff0000);
+  background-size: 400% 400%; 
+  animation: gradientAnimation 8s ease infinite; 
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); 
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 20px;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+ 
+} */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr); 
   gap: 20px;
-  margin: 12px;
+  background: linear-gradient(45deg, #ff7f50, #32cd32, #1e90ff, #ff0000);
+    background-size: 400% 400%;
+    animation: gradientAnimation 10s ease infinite;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    transition: transform 0.3s ease-in-out;
  
 }
 
 .gallery-item {
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Fixed box-shadow value */
+  position: relative;
+  width: 400px; /* Set a fixed width for all images */
+  height: 390px; /* Set a fixed height for all images */
+ 
+}
+.gallery-item img {
+  width: 100%; /* Make the image fill the width of the container */
+  height: 100%; /* Make the image fill the height of the container */
+  object-fit: cover; /* Ensure the image covers the container while maintaining its aspect ratio */
+  border-radius: 8px; /* Maintain the rounded corners of the container */
 }
 
 .titleGallery h4 {
@@ -391,12 +601,13 @@ h2, h4, h5 {
   font-size: 2rem;
   font-weight: bold;
   color: #333;
+  border-radius: 71px 26px 18px 56px;
 }
 
 
 /* Rooms Section */
 .Rooms {
-  padding: 50px 20px;
+  /* padding: 50px 2px; */
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -406,8 +617,47 @@ h2, h4, h5 {
 .roomsTitle {
   font-size: 2.5rem;
   font-weight: 600;
-  color: #333;
-  padding: 10px 46px;
+  color: white;
+  padding: 15px 50px;
+  background: linear-gradient(45deg, #ff6a00, #3f87a6, #ff9d47);
+  background-size: 400% 400%;
+  animation: gradientAnimation 9s ease infinite;
+  border-radius: 12px;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  display: inline-block;
+  transition: transform 2s ease-in-out;
+}
+
+@keyframes gradientAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.roomsTitle:hover {
+  transform: scale(1.1);
+  cursor: pointer;
+}
+
+.roomsTitle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 12s ease-in-out;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.roomsTitle:hover::before {
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .Rooms .container {
@@ -437,7 +687,6 @@ h2, h4, h5 {
   color: #0f0c0c;
   font-family: cursive !important;
   
-  margin-bottom: 6px;
 }
 
 .locationRoomDetails {
@@ -552,14 +801,13 @@ footer {
 }
 /* Style for the heading */
 .roomsTitle {
-  font-size: 29px;
+  font-size: 35px;
   font-weight: bold;
-  color: #f95f00;
   display: flex;
   font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-  margin-top: 200px;
+  margin-top: 28px;
   position: relative;
-  padding-right: 10px;
+  padding-left: 120px;
 }
 
 /* Style for the login warning message */
@@ -654,7 +902,19 @@ footer {
   color: #ff9800;
   font-weight: bold;
 }
-
+.room-price {
+  position: absolute;
+  top: 10px; /* 10px from the top */
+  right: 10px; /* 10px from the right */
+  background-color: rgba(0, 0, 0, 0.7); /* Stylish dark background */
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 8px 15px; /* Padding for a nice look */
+  border-radius: 12px; /* Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Soft shadow for better visibility */
+  z-index: 15; /* Make sure it's above other content */
+}
 .room-location-12 {
   font-size: 14px;
   color: #888;
@@ -666,18 +926,37 @@ footer {
 }
 
 .book-now-btn-12 {
-  background-color: #ff9800;
+  background-color: #21c01e;
   color: white;
   padding: 8px 20px;
   font-weight: bold;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  /* transition: background-color 0.3s ease; */
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
+.view-btn-12 {
+  background-color: #00acf6;
+  color: white;
+  padding: 8px 20px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+ 
+}
+
+
 .book-now-btn-12:hover {
-  background-color: #e68900;
+  background-color: #1fe600; /* Change background color */
+  transform: scale(1.1); /* Scale the button on hover */
+}
+.view-btn-12:hover {
+  background-color: #25ac1e;
+  transform: scale(1.1);
 }
 
 .room-container-12:hover {
@@ -727,7 +1006,7 @@ footer {
   width: 100%;
   height: 100%;
   object-fit: cover; /* Ensures the image fills the container without distortion */
-  transition: transform 0.3s ease; /* Smooth transition when hovered */
+  transition: transform 1s ease; /* Smooth transition when hovered */
 }
 
 /* Title text style */
@@ -743,24 +1022,27 @@ footer {
 /* Content section for the description, price, etc. (Initially hidden) */
 .custom-room-info {
   position: absolute;
-  top: 90%; /* Initially position it below the container */
+  top: 0; /* Ensure it's at the top */
   left: 0;
   right: 0;
-  background-color: rgb(255, 136, 0,0.9); /* Orange color with transparency */
+  bottom: 0; /* Stretch the content to cover the entire container */
+  background-color: rgba(255, 136, 0, 0.9); /* Orange color with transparency */
   color: rgb(255, 255, 255);
   padding: 20px;
   z-index: 10; /* Ensure content is on top of the image */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  transition: top 0.4s ease-in-out; /* Animation for bottom to up effect */
+  transition: opacity 0.9s ease-in-out, transform 0.6s ease-in-out; /* Smooth opacity and transform transition */
   opacity: 0; /* Initially hide the content */
+  transform: scaleY(0); /* Initially scaled down vertically */
+  transform-origin: bottom; /* Ensure the scale animation happens from the bottom */
 }
 
 /* Show the room info on hover */
-.image-container:hover .custom-room-info {
-  top: 0; /* Move to the top */
+.gallery-item1:hover .custom-room-info {
   opacity: 1; /* Make the overlay visible */
+  transform: scaleY(1); /* Expand the content vertically to cover the entire container */
 }
 
 /* Hover effect for the image */
@@ -772,6 +1054,9 @@ footer {
 .gallery-item1:hover {
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   transform: translateY(5px); /* Lift the card */
+}
+.gallery-item1:hover .custom-room-info {
+  opacity: 1; /* Make the overlay visible */
 }
 
 /* Price and location styling */
@@ -795,4 +1080,23 @@ footer {
 
 .custom-room-info .text-center form button:hover {
 color: #e68900;
+}
+.price-container210 {
+}
+
+.room-book-buttons-containerMain {
+  display: flex;
+  justify-content: space-between; 
+  padding: 0;
+  padding: 10px 20px;
+  position: relative;
+  margin-bottom: 9px;
+}
+.room-book-buttons-containerSearch {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  position: relative; /* Changed to absolute */
+  bottom: 0; /* Aligns the child to the bottom of the parent */
+  width: 100%; /* Ensure it takes the full width of the parent */
 }
