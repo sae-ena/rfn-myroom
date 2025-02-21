@@ -119,10 +119,10 @@ h2, h4, h5 {
   position: absolute;
   top: 40px;
   left: 0;
-  background-color: #333;
+  background-color: rgb(253, 136, 20);
   min-width: 160px;
-  padding: 10px 0;
   z-index: 1;
+  border-radius: 15px;
 }
 
 .dropdown-content a {
@@ -435,7 +435,7 @@ h2, h4, h5 {
 /* Interior Info Section */
 .interior-info-section {
   padding: 50px 20px;
-  background: linear-gradient(135deg, #3f87a6, #ff9d47, #ff6a00);
+  background: rgb(255, 255, 255);
   background-size: 400% 400%;
   animation: gradientShift 8s ease infinite, shadowPulse 2s infinite alternate; /* Gradient and shadow animations */
   border-radius: 15px;

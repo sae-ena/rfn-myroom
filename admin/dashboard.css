@@ -71,18 +71,18 @@ body {
 
 .add-room-button {
     background-color: #00c60a;
-    color: white;
+    /* color: white; */
     border: none;
     padding: 10px 20px;
     font-size: 19px;
     cursor: pointer;
-    border-radius: 15px;
+    border-radius: 7px;
     text-decoration: none;
 }
 
 .add-room-button:hover {
   color: #0e0601;
-  font-size: 17px;
+  font-size: 20px;
 }
 
 /* Room Overview Cards */

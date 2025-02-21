@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $roomStatus = (int)mysqli_real_escape_string($conn, $_POST['status']);
     $EditMode = isset($_POST['enabledEdit']) ? mysqli_real_escape_string($conn, $_POST['enabledEdit']) : null;
 
+    
     // Check if multiple files are uploaded
     if (isset($_FILES['room_image']) && count($_FILES['room_image']['name']) > 0) {
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
@@ -58,11 +59,17 @@ if ($rs && mysqli_num_rows($rs) > 0) {
             // Validate file size
             if ($file_size > $max_file_size) {
                 $validationError = "Error: File size exceeds the maximum limit of 2 MB.";
+                if( $_SERVER['HTTP_REFERER'] == "http://localhost:8000/admin/form.php"){
+                    exit("File size exceeds the maximum limit of 2 MB");
+                } 
                 break;
             }
 
             // Validate file type
             if (!in_array(mime_content_type($file_tmp), $allowed_types)) {
+                if( $_SERVER['HTTP_REFERER'] == "http://localhost:8000/admin/form.php"){
+                    exit("Only JPEG, PNG files are allowed");
+                } 
                 $validationError = "Error: Only JPEG, PNG, and GIF files are allowed.";
                 break;
             }

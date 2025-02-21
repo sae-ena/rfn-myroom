@@ -89,10 +89,13 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                 if ($row['user_status'] == 'active') {
                     // Successful login, start session and redirect
                     session_start();
-                    $_SESSION['user_name'] = $row['user_name'];
+                    $_SESSION['user_name'] = explode(' ', trim($row['user_name']))[0];
                     $_SESSION['user_email'] = $user_emailByLogin;
                     $_SESSION['user_type'] = "user";
                     $_SESSION['auth_id'] = $row['user_id'];
+                    if (!isset($_SESSION['csrf_token'])) {
+                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    }
 
                     // Redirect to the dashboard or main page (replace 'dashboard.php' with the actual destination)
                     header("Location: index.php");

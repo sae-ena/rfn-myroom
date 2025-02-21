@@ -13,7 +13,10 @@ $result =    RoomFetchForWebsite::fetchRoomData($query);
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['roomUid'])) {
    $roomId = $_POST['roomUid'];
   
+
+   $conn->query("SET FOREIGN_KEY_CHECKS = 0");
    $query = "DELETE from rooms where room_id= '$roomId' AND room_status = 'inActive';";
+   $conn->query("SET FOREIGN_KEY_CHECKS = 1");
    $deleteResult = $conn->query($query);
    if($conn->affected_rows > 0){
        
@@ -59,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['title']) || isset($_GE
    $status = convertToNullIfEmpty($status);
  
    if(isset($status) && isset($search)){
-        $query = "SELECT * from rooms where (room_status = '$status' OR room_name like '%$search%') AND (room_location like '%$search%' OR room_id like '%$search%');";
+        $query = "SELECT * from rooms where (room_status = '$status') AND (room_location like '%$search%' OR room_name like '%$search%');";
      }elseif(isset($search)){
          $query = "SELECT * from rooms where (room_name like '%$search%' OR room_id like '%$search%') OR room_location like '%$search%';";
         
@@ -98,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['title']) || isset($_GE
 
               
     
-    <button type="reset" style="background-color: #f8f9fa; color: #495057; border: 2px solid #ced4da; border-radius: 5px; padding: 12px 20px; font-size: 17px; cursor: pointer; transition: background-color 0.3s ease, border-color 0.3s ease;border-radius:29px;text-decoration:none">Reset </button>
+    <button type="reset" style="background-color: #f8f9fa; color: #495057; border: 2px solid #ced4da; border-radius: 5px; padding: 12px 20px; font-size: 17px; cursor: pointer; transition: background-color 0.3s ease, border-color 0.3s ease;border-radius:29px;text-decoration:none" onclick="resetForm()" >Reset </button>
 
 
               
@@ -108,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['title']) || isset($_GE
         <table class="room-table">
             <thead>
                 <tr>
-                    <th>UID</th>
+                    <th>S.N</th>
                     <th>Room Title</th>
                     <th>Location</th>
                     <th>Price</th>
@@ -119,9 +122,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['title']) || isset($_GE
             </thead>
             <tbody>
            <?php if(true){
-            foreach($result as $room){
+            foreach($result as $key => $room){
                echo"<tr>
-                    <td>".$room['room_id']."</td>
+                    <td>".++$key."</td>
                     <td>".$room['room_name']."</td>
                     <td>".$room['room_location']."</td>
                     <td>".$room['room_price']."/month</td>
@@ -144,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['title']) || isset($_GE
                         <form action=".  $_SERVER['PHP_SELF']." method='POST' >
                         <input type='number' hidden value=".$room['room_id']." name='roomUid' /> 
                         <button type='submit' class='delete-button'> ";if($room['room_status'] =='active') echo "Delete";
-                        else echo"Force Delete";
+                        else echo"Delete";
                         echo"
                         </form>
                     </td>
@@ -168,6 +171,11 @@ require('../helperFunction/SweetAlert.php');
 
 </body>
 <script>
+    function resetForm() {
+        localStorage.removeItem('inputValue');
+        localStorage.removeItem('cursorPosition');
+    window.location.href = window.location.pathname; // Reloads page without query parameters
+}
 window.onload = function() {
     const input = document.getElementById('titleSearch');
     const storedValue = localStorage.getItem('inputValue');

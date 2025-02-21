@@ -3,10 +3,12 @@ require "leftSidebar.php";
 require('../helperFunction/helpers.php');
 require "dbConnect.php";
 $formTitle ="Add New Room Listing";
+$buttonText = "Add Room";
 $roomTitle = $roomLocation = $roomPrice = $roomStatus = $roomType = $roomDescription = $roomImage = "";$new_file_name="";
 $roomId = null;
 if ($_SERVER["REQUEST_METHOD"] === 'GET' && isset($_GET['id'])) {
     $formTitle ="Edit Room Information | UID : ".$_GET['id'];
+    $buttonText = "Update Room";
     $roomId = $_GET['id'];
     // Assuming $conn is your database connection
     if ($stmt = $conn->prepare("SELECT * FROM rooms WHERE room_id = ?")) {
@@ -204,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </select>
 
             <!-- Submit Button -->
-            <button type="submit" class="submit-button">Add Room</button>
+            <button type="submit" class="submit-button"><?php echo $buttonText; ?></button>
         </form>
     </div>
 </div>
@@ -213,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <span class="close" onclick="closeImageUploadModal()">&times;</span>
     <h2>Upload Image</h2>
     <form id="imageUploadForm" method="post" enctype="multipart/form-data">
-        <input type="file" id="photos" name="room_image" accept="image/*">
+        <input type="file" id="photos" name="room_image[]" accept="image/*" multiple>
         <input type="text" name="status" value="0" hidden>
         <button type="submit" id="imageUploadBtn">Upload</button>
     </form>
@@ -328,7 +330,7 @@ document.getElementById('imageUploadForm').addEventListener('submit', function(e
     e.preventDefault();  // Prevent the form from submitting the traditional way
 
     const fileInput = document.getElementById('photos');
-    const file = fileInput.files[0];
+    const file = fileInput.files;
 
     const form =this;
     // Validate if a file has been selected
@@ -338,8 +340,6 @@ document.getElementById('imageUploadForm').addEventListener('submit', function(e
     // Get the form data, including the file input
     const formData = new FormData(this);
 
-   
-
     // Send the form data via Fetch API
     fetch('addMedia.php', {
         method: 'POST',
@@ -347,13 +347,26 @@ document.getElementById('imageUploadForm').addEventListener('submit', function(e
     })
     .then(response => response.text())  // We expect a text response from PHP
     .then(data => {
-        // form.reset();
-        res=data.includes("Connection failed to upload image");
-if(res){
+        
+        resAlreadyUploaded=data.includes("Connection failed to upload image");
+if(resAlreadyUploaded){
     document.getElementById("errorMessage").textContent = "Image has been uploaded already.";
     showErrorModal();
     return;
 }
+        resTypeValidation=data.includes("Only JPEG, PNG files are allowed");
+if(resTypeValidation){
+    document.getElementById("errorMessage").textContent = "Only JPEG, PNG files are allowed";
+    showErrorModal();
+    return;
+}
+        resMaxSize=data.includes("File size exceeds the maximum limit of 2 MB");
+if(resMaxSize){
+    document.getElementById("errorMessage").textContent = "File size exceeds the maximum limit of 2 MB";
+    showErrorModal();
+    return;
+}
+
 document.getElementById("successMessage").textContent = "Image has been uploaded .";
         //window.location.href="form.php"; 
         showSuccessImageUploadModal();

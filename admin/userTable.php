@@ -56,9 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statusValue'])) {
             </thead>
             <tbody>
            <?php if($result->num_rows >0){
+            $sn = 1;
             while($room = $result->fetch_assoc()){
                echo"<tr>
-                    <td>".$room['user_id']."</td>
+                    <td>".$sn++."</td>
                     <td>".$room['user_name']."</td>
                     <td>".$room['user_email']."</td>
                     <td>".$room['user_number']."</td>

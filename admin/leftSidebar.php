@@ -24,7 +24,6 @@ echo'<!DOCTYPE html>
                 <li><a href="booking.php" class="nav-link" data-target="bookings">Bookings</a></li>
                 <li><a href="userTable.php" class="nav-link" data-target="users">Users</a></li>
                 <li><a href="approve.php" class="nav-link" data-target="settings">Approve List</a></li>
-                <li><a href="media.php" class="nav-link" data-target="media">Media  Manager</a></li>
                 <li><a href="dbConnect.php" class="nav-link" id="logoutBtn" >Logout</a></li>
             </ul>
         </nav>
@@ -34,6 +33,7 @@ echo'<!DOCTYPE html>
 <script>
 let btn = document.getElementById("logoutBtn");
 btn.onclick = function(event) {
+    // <li><a href="media.php" class="nav-link" data-target="media">Media  Manager</a></li>
             // Prevent the default action of the link (redirection)
             event.preventDefault();
             

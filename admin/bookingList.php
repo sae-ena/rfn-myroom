@@ -165,7 +165,7 @@ if (is_array($rooms) && count($rooms) == 0) {
                                     <p><strong>Booking Date:</strong> ' . $user['booking_date'] . '</p>
                                     ';
                                     if(isset($user['description']) && !empty($user['description'])){
-                                        dd($user);
+                                      
                                        echo '<p><strong>User Note :</strong> ' . $user['description'] . '</p>';
                                         
                                     }

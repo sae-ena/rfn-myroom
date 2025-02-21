@@ -50,7 +50,7 @@ if ($result->num_rows > 0) {
                echo' <table class="room-table">
                 <thead>
                     <tr>
-                        <th>UID</th>
+                        <th>S.N</th>
                         <th>Room Image</th>
                         <th>Room Title</th>
                         <th>Location</th>
