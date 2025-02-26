@@ -4,6 +4,7 @@ require "dbConnect.php";  // Make sure this file contains the correct database c
 
 // Fetch data from the ROOMS table
 $query = "SELECT *,(SELECT COUNT(*) FROM rooms WHERE room_status = 'active') AS activeCount FROM rooms ";
+$queryUser = " Count(user_id) FROM users";
 $result = $conn->query($query);
 
 if ($result->num_rows > 0) {
@@ -41,7 +42,7 @@ if ($result->num_rows > 0) {
                     <p>22</p>
                 </div>
                 <div class="card">
-                    <h3>Inactive Listings</h3>
+                    <h3>Total Users</h3>
                     <p><?php echo $inActiveRoom?></p>
                 </div>
             </div>

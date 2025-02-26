@@ -60,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['title']) || isset($_GE
     $search = convertToNullIfEmpty($search);
    $status = $_GET['status']?? null;
    $status = convertToNullIfEmpty($status);
+
  
    if(isset($status) && isset($search)){
         $query = "SELECT * from rooms where (room_status = '$status') AND (room_location like '%$search%' OR room_name like '%$search%');";
@@ -76,6 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['title']) || isset($_GE
 
    if(!$result) exit("Connection failed to fetch Data");
 
+}else{
+    echo "<script>
+    localStorage.removeItem('inputValue');
+    localStorage.removeItem('cursorPosition');
+</script>";
 }
 
 
@@ -174,7 +180,7 @@ require('../helperFunction/SweetAlert.php');
     function resetForm() {
         localStorage.removeItem('inputValue');
         localStorage.removeItem('cursorPosition');
-    window.location.href = window.location.pathname; // Reloads page without query parameters
+    window.location.href = window.location.pathname; 
 }
 window.onload = function() {
     const input = document.getElementById('titleSearch');

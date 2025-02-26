@@ -40,6 +40,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $imagePath = mysqli_real_escape_string($conn, $_POST['room_image']);
     $new_file_name = mysqli_real_escape_string($conn, $_POST['room_image']);
     if(isset($_POST['enabledEdit']))  $EditMode = mysqli_real_escape_string($conn, $_POST['enabledEdit']);
+
+    if (empty($roomTitle) || empty($roomLocation) || empty($roomPrice) || empty($roomStatus) || empty($roomType)) {
+        $form_error = "All fields are required.";
+    }
+
+    if(strlen($roomTitle) > 155){
+        $form_error = "Title should be less than 155 characters";
+    }
+    if(strlen($roomLocation) > 255){
+        $form_error = "Location should be less than 255 characters";
+    }
+    if(strlen($roomTitle ) < 3){
+        $form_error = "Title should be more than 3 characters";
+    }
+    if(strlen($roomLocation) < 3){
+        $form_error = "Location should be more than 3 characters";
+    }
+
+    if($roomPrice <= 0 || !is_numeric($roomPrice) || strlen($roomPrice) > 10 || !preg_match("/^[0-9]*$/",$roomPrice)){
+        $form_error = "Invalid Room Price";
+    }
     
     if (isset($_FILES['room_image']['name']) && $_FILES['room_image']['size'] > 0 ){
 
@@ -158,22 +179,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h1><?php echo $formTitle ;?></h1>
             <input type="number" hidden  value="<?= htmlspecialchars($roomId) ?>" name="enabledEdit">
             <!-- Room Title -->
-            <label for="room-title">Room Title:</label>
+            <label for="room-title">Room Title: <span class="requiredRoomForm">*</span></label>
             <input type="text" id="room-title" name="title" placeholder="Enter room title"
                 value="<?= htmlspecialchars($roomTitle) ?>">
 
             <!-- Location -->
-            <label for="location">Location:</label>
+            <label for="location">Location:<span class="requiredRoomForm">*</span></label>
             <input type="text" id="street-address" name="location" placeholder="Street Address"
                 value="<?= htmlspecialchars($roomLocation) ?>">
 
             <!-- Price -->
-            <label for="price">Price:</label>
+            <label for="price">Price:<span class="requiredRoomForm">*</span></label>
             <input type="number" id="price" name="price" placeholder="Enter price"
                 value="<?= htmlspecialchars($roomPrice) ?>">
 
             <!-- Room Type -->
-            <label for="room-type">Room Type:</label>
+            <label for="room-type">Room Type:<span class="requiredRoomForm">*</span></label>
     <select id="room-type" name="type">
         <option value="1BHK" <?= htmlspecialchars($roomType) == "1BHK" ? 'selected' : '' ?>>1 BHK</option>
         <option value="2BHK" <?= htmlspecialchars($roomType) == "2BHK" ? 'selected' : '' ?>>2 BHK</option>
@@ -182,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </select>
             
             <!-- <input type="file" id="photos" name="room_image" accept="image/*" > -->
-            <label for="selected-image">Image :</label>
+            <label for="selected-image">Image :<span class="requiredRoomForm">*</span></label>
             <div style="display: flex; align-items: center;">
     <?php if (!empty($roomImage)): ?>
         <img src="<?php echo $roomImage ?>" alt="room image" style="width: 90px; height: 100px; margin-left: 10px;"/>
@@ -196,9 +217,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Description -->
             <label for="description">Description:</label>
             <textarea id="description" name="description" rows="5" placeholder="Add a description..."
-                required><?= htmlspecialchars($roomDescription) ?></textarea>
+                requiredRoomForm><?= htmlspecialchars($roomDescription) ?></textarea>
 
-            <label for="room-type">Status:</label>
+            <label for="room-type">Status:<span class="requiredRoomForm">*</span></label>
             <select id="room-type" name="status" required>
                 <option value="" selected disabled>Select Room Status</option>
                 <option value="active" <?= htmlspecialchars($roomStatus)==="active"?"selected":"" ?> >Active</option>

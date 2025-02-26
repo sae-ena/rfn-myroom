@@ -27,7 +27,9 @@ require_once('helperFunction/helpers.php');
         <li class="dropdown">
           <a href="#" class="dropbtn">More</a>
           <div class="dropdown-content">
-            <a href="myBooking.php">My Booking</a>
+            <?php
+             if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === "user") {?>
+            <a href="myBooking.php">My Booking</a><?php } ?>
             <a href="#contact">Contact</a>
           </div>
         </li>

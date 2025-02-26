@@ -106,7 +106,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                 }
             }
             else{
-                $form_error = "You are not authorized to login here.";
+                $login_error = "You are not authorized to login here.";
                 
             }
             } else {
@@ -131,6 +131,19 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
     $user_password = $_POST['user_password'];
     $user_confirm_password = $_POST['user_confirmation_password'];
 
+    
+    if(strlen($user_name) < 3 || strlen($user_name) > 70){
+        $form_error = "Name must be between 3 and  70 characters.";
+    }
+    if(strlen($user_location) > 200){
+        $form_error = "Location must be less than 200 characters.";
+    }
+    if(strlen($user_email) > 70){
+        $form_error = "Email must be less than 70 characters.";
+    }
+    if(strlen($user_confirm_password) > 70){
+        $form_error = "Password must be less than 70 characters.";
+    }
     // Validate input
     if (empty($user_name) || empty($user_email) || empty($user_password)) {
         $form_error = "Please fill all required fields.";
@@ -153,16 +166,16 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                 $form_error = "Invalid Email Format";
             elseif (strlen($user_number) != 10 || !str_starts_with($user_number, '98')) {
                 $form_error = "Invalid PhoneNumber.";
-            } elseif (strlen($user_password) < 5) {
-                $form_error = "Password must be at least 5 characters long.";
+            } elseif (strlen($user_password) < 8) {
+                $form_error = "Password must be at least 8 characters long.";
             } else {
 
                 // Hash the password
                 $hashed_password = password_hash($user_password, PASSWORD_DEFAULT);
 
                 // Prepare the SQL query to insert data into the 'users' table
-                $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_password,user_type)
-                  VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '$hashed_password','user')";
+                $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_password,user_type ,user_status )
+                  VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '$hashed_password','user','active')";
 
                 $sqlResult = InsertRoomData::insertData($query);
                 $successfullyRegister = "User registered successfully!";
@@ -267,6 +280,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                         placeholder="Confirm Password"
                         style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;"><button type="button" id="toggle-confirm-password" class="eye-button">&#128065;</button>
 </div>
+<input type="text" name="register" hidden id="" value="newRegistration">
                         <p style="color: white; background-color: rgba(244, 67, 54, 0.6); font-size: 12px; border-radius: 25px; padding: 10px 15px; margin: 0px 0px; display: none;" id="password-message">
     *Password: Min 8 chars, 1 uppercase, 1 number, 1 symbol.
 </p>
@@ -290,19 +304,22 @@ const passwordField = document.getElementById('user_password');
 const confirmPasswordField = document.getElementById('confirmPassword');
 const passwordMessage = document.getElementById('password-message');
 
-        passwordField.addEventListener('focus', function() {
-    passwordMessage.style.display = 'inline-block'; // Show the message
-});
+//         passwordField.addEventListener('focus', function() {
+//     passwordMessage.style.display = 'inline-block'; // Show the message
+// });
 
-// Show the message when the user focuses on the confirm password field as well
-confirmPasswordField.addEventListener('focus', function() {
-    passwordMessage.style.display = 'inline-block'; // Show the message
-});
+// // Show the message when the user focuses on the confirm password field as well
+// confirmPasswordField.addEventListener('focus', function() {
+//     passwordMessage.style.display = 'inline-block'; // Show the message
+// });
 document.addEventListener('click', function(event) {
     targetedId = event.target.id;
 
-    if((targetedId !="user_password" && targetedId != "confirmPassword") && (targetedId != "toggle-password" && targetedId != "toggle-confirm-password" )){
+
+    if((targetedId !="user_password" && targetedId != "confirmPassword")){
         passwordMessage.style.display = 'none';
+    }else{
+        passwordMessage.style.display = 'block';
     }
 
     
@@ -312,6 +329,7 @@ document.getElementById('toggle-password').addEventListener('click', function() 
     const passwordField = document.getElementById('user_password');
     if (passwordField.type === 'password') {
         passwordField.type = 'text';
+        passwordField.style.width = '98%';
     } else {
         passwordField.type = 'password';
     }
@@ -321,6 +339,7 @@ document.getElementById('toggle-confirm-password').addEventListener('click', fun
     const confirmPasswordField = document.getElementById('confirmPassword');
     if (confirmPasswordField.type === 'password') {
         confirmPasswordField.type = 'text';
+        confirmPasswordField.style.width = '98%';
     } else {
         confirmPasswordField.type = 'password';
     }
@@ -382,7 +401,7 @@ document.getElementById('register-form').addEventListener('submit', function(eve
     }
 
     // Validate Phone Number (must be 10 digits and start with 9, 8, 7, or 6)
-    if (!/^[98|97]\d{8}$/.test(phoneNumber)) {
+    if (!/^[98|97]\d{9}$/.test(phoneNumber)) {
         showAlert("Phone number must be 10 digits and start with 98,97.");
         valid = false;
     }
@@ -390,7 +409,7 @@ document.getElementById('register-form').addEventListener('submit', function(eve
     // Validate Password (minimum 8 characters, one uppercase letter, one number, and one special character)
     const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
     if (!passwordPattern.test(password)) {
-        showAlert("Password must be at least 8 characters long, include at least one uppercase letter, one number, and one special character.");
+        showAlert("Password must be at least 8 characters, including at least one uppercase,number and special char.");
         valid = false;
     }
 

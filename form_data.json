@@ -1,0 +1,35 @@
+[
+    {
+        "label": "Name",
+        "type": "text",
+        "name": "name",
+        "placeholder": "Enter your name",
+        "required": true
+    },
+    {
+        "label": "Email",
+        "type": "email",
+        "name": "email",
+        "placeholder": "Enter your email",
+        "required": true
+    },
+    {
+        "label": "Gender",
+        "type": "select",
+        "name": "gender",
+        "placeholder": "",
+        "required": true,
+        "options": [
+            "Male",
+            "Female",
+            "None"
+        ]
+    },
+    {
+        "label": "RoomType",
+        "type": "email",
+        "name": "name",
+        "placeholder": "",
+        "required": true
+    }
+]

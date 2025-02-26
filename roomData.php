@@ -63,7 +63,7 @@ if(isset($_SESSION['auth_id']) && $_SESSION['user_type'] == "user"){
     $query = "SELECT r.room_id,r.room_status,r.room_location,  r.room_name, r.room_image, b.is_active,r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id FROM  rooms r LEFT JOIN  bookings b ON b.room_id = r.room_id AND b.user_id = '$userID'  WHERE ( r.room_status ='active') ORDER BY r.created_at DESC  LIMIT 26;";
 }else{
 
-    $query = "SELECT  r.room_id,r.room_status,  r.room_name,r.room_location, r.room_image, b.is_active,r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id FROM rooms r Left join bookings b ON r.room_id = b.room_id  where (b.status != 'confirmed' OR b.booking_id IS NULL)  AND r.room_status = 'active' ORDER BY r.created_at DESC  LIMIT 15;";
+    $query = "SELECT  r.room_id,r.room_status,  r.room_name,r.room_location, r.room_image, b.is_active,r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id FROM rooms r Left join bookings b ON r.room_id = b.room_id  where (b.status != 'confirmed' OR b.booking_id IS NULL)  AND r.room_status = 'active' ORDER BY r.created_at DESC  LIMIT 26;";
 }
 $rooms = RoomFetchForWebsite::fetchRoomData($query);
 
@@ -138,6 +138,14 @@ if (isset($searchResult) && is_array($searchResult)) {
 <div class="container">
     <div class="gallery-grid">
         <?php foreach ($rooms as $room) : ?>
+            <?php
+            $currentRoomId = $room['room_id'] ;
+
+            if (isset($previousRoomId) && $previousRoomId == $currentRoomId) {
+                continue;
+            }
+
+            ?>
            
             <div class="gallery-item1">
                 <?php 
@@ -206,6 +214,10 @@ if (isset($searchResult) && is_array($searchResult)) {
 </div>
 
                 </div>
+                <?php
+            $previousRoomId = $room['room_id'] ;
+
+            ?>
               
             <?php endforeach; ?>
             <!-- End of image-container -->

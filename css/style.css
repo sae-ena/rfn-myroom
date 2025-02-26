@@ -714,6 +714,7 @@ h2, h4, h5 {
 
 /* Footer */
 footer {
+  margin-top: 29px;
   background-color: #e67600;
   color: #ecf0f1;
   padding: 40px 20px;
@@ -721,6 +722,8 @@ footer {
 }
 
 .footer-container {
+  position: relative;
+  margin-top: 20px;
   display: flex;
   justify-content: space-around;
   flex-wrap: wrap;
