@@ -52,14 +52,14 @@ $rs = $conn->query($queryCheck);
 if ($rs && mysqli_num_rows($rs) > 0) {
     $validationError = "Image already exists.";
     
-    if( $_SERVER['HTTP_REFERER'] == "http://localhost:8000/admin/form.php"){
+    if( $_SERVER['HTTP_REFERER'] == "http://localhost:8000/admin/form.php" || $_SERVER['HTTP_REFERER'] == "http://localhost:8000/dynaform/dynaform.php"){
         exit("Connection failed to upload image");
     } 
 }else{
             // Validate file size
             if ($file_size > $max_file_size) {
                 $validationError = "Error: File size exceeds the maximum limit of 2 MB.";
-                if( $_SERVER['HTTP_REFERER'] == "http://localhost:8000/admin/form.php"){
+                if( $_SERVER['HTTP_REFERER'] == "http://localhost:8000/admin/form.php" || $_SERVER['HTTP_REFERER'] == "http://localhost:8000/dynaform/dynaform.php" ){
                     exit("File size exceeds the maximum limit of 2 MB");
                 } 
                 break;
@@ -67,7 +67,7 @@ if ($rs && mysqli_num_rows($rs) > 0) {
 
             // Validate file type
             if (!in_array(mime_content_type($file_tmp), $allowed_types)) {
-                if( $_SERVER['HTTP_REFERER'] == "http://localhost:8000/admin/form.php"){
+                if( $_SERVER['HTTP_REFERER'] == "http://localhost:8000/admin/form.php" || $_SERVER['HTTP_REFERER'] == "http://localhost:8000/dynaform/dynaform.php"){
                     exit("Only JPEG, PNG files are allowed");
                 } 
                 $validationError = "Error: Only JPEG, PNG, and GIF files are allowed.";

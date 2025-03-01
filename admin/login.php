@@ -14,9 +14,27 @@ if (isset($_SESSION['user_email'])) {
     exit(); // Ensure no further code is executed after the redirection
 }
 
+$formQuery = "SELECT * FROM form_managers WHERE form_slug = ? AND status = ?";
+$formSlug = "login_admin";
+$formManagerStatus = 1;
+$FormSmt = $conn->prepare($formQuery);
+$FormSmt->bind_param("si", $formSlug ,$formManagerStatus);
+$FormSmt->execute();
+$formManagerResult = $FormSmt->get_result();
+
+
+
 
 // Check if the login form is submitted
 if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
+
+    $outerIndex = 0;
+    foreach ($_POST as $key => $value) {
+        $requestArray[$outerIndex] = $value;
+        $outerIndex ++;
+        
+    }
+      
     // Get the input data from the form
     $user_emailByLogin = $_POST['userEmailByLogin'];
     $user_passwordByLogin = $_POST['userPasswordByLogin'];
@@ -139,8 +157,25 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
             <span><?php echo $successfullyRegister; ?></span>
         </div>
     <?php endif; ?>
-    <div class="auth-wrapper"
-        style="background-image: url('uploads/RealEstateAgentvs.MortgageBrokerWhatstheDifference-6260ea50d1044056899d8cf6dff7d47d.jpg')">
+    <?php
+            if ($formManagerResult->num_rows > 0) {
+                $formData = $formManagerResult->fetch_assoc();
+
+                echo '<div class="auth-wrapper"
+                style="background-image: url(\'/admin/'.$formData["background_image"].'\');
+                       background-color: ' . $formData["background_color"] . ' !important;
+                       background-size: cover;
+                       background-repeat: no-repeat;
+                       background-position: center center;
+                       background-attachment: fixed;
+                       width: 100vw;
+                       height: 100vh;
+                       display: flex;
+                       align-items: center;
+                       justify-content: center;">';
+        
+        
+        ?>
         <div class="auth-container">
             <!-- Toggle Button -->
             <!-- <div class="toggle-container">
@@ -149,23 +184,107 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
 
             <!-- Glassmorphism Forms -->
             <div id="login-form" class="form-card glass visible">
-                <h1>Login</h1>
+            <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
+<?php
+   
+    
+    
+    // Decode the field details (it's a JSON string)
+    $fields = json_decode($formData['field_detail'], true); // true converts it to an associative array
 
-                <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
-                    <label for="login-email">Email:</label>
-                    <!-- <input type="email" id="login-email" required> -->
+    if (!empty($fields)) {
+            echo '<h1>' . htmlspecialchars($formData['form_name']) . '</h1>';
+        echo '<form action="submit_form.php" method="POST">';
+        $innerIndex = 0;
+        foreach ($fields as $index => $field) {
+
+       
+            echo '<label for="' . htmlspecialchars($field["name"]) . '">' . htmlspecialchars($field['label']) ;  if($field['required'] == true){ echo'<span class="required" style="
+    color: red;
+    font-size: 16px;
+    margin-left: 5px;
+">*</span>';};  echo'</label>';
+
+
+if ($field['type'] == 'select') {
+    echo '<select name="'.$field["name"].$index.'" id="field_' . $index . '" ' . ($field['required'] ? 'required' : '') . '>';
+    foreach ($field['options'] as $option) {
+        echo '<option value="' . htmlspecialchars($option) . '">' . htmlspecialchars($option) . '</option>';
+    }
+    echo '</select>';
+} else {
+    
+    echo '<input type="' . htmlspecialchars($field['type']) . '" 
+           name="'.$field['name'].'" value = "'.(isset($requestArray[$innerIndex]) && $requestArray[$innerIndex]?$requestArray[$innerIndex]:"").'"
+           id="field_' . $index . '" 
+           placeholder="' . htmlspecialchars($field['placeholder']) . '" 
+           ' . ($field['required'] ? 'required' : '') . '>';
+}
+$innerIndex++;
+            
+        }
+     
+    } echo '<button type="submit" class="submit-button" name="login">Login</button>
+
+    </form>
+</div>';
+}
+else{
+    ?>
+<div id="formNotFound" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background-color: rgba(0, 0, 0, 0.6); z-index: 1000;">
+    
+    <div style="position: relative; margin: 15% auto; background-color: #ffebee; padding: 25px; width: 350px; 
+        border-radius: 10px; text-align: center; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); 
+        border: 2px solid #d32f2f; animation: fadeIn 0.4s ease-in-out;">
+        
+        <!-- Error Icon -->
+        <div style="width: 60px; height: 60px; background-color: #d32f2f; color: white; 
+            font-size: 30px; font-weight: bold; line-height: 60px; text-align: center; 
+            border-radius: 50%; margin: -50px auto 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);">
+            !
+        </div>
+
+        <h3 style="color: #b71c1c; margin-bottom: 10px; font-family: Arial, sans-serif;">Error</h3>
+
+        <hr style="border: 2px solid #d32f2f; width: 100%;">
+
+            <p id="errorMessage" style="color: #333; font-size: 16px; font-family: Arial, sans-serif; 
+                margin: 15px 0; padding: 10px; background: #ffcdd2; border-radius: 5px; box-shadow: inset 0px 1px 4px rgba(0,0,0,0.1);">
+                Form not found. Please contact the administrator.
+            </p>
+
+
+        <!-- Close Button -->
+        <button onclick="document.getElementById('formNotFound').style.display='block'" 
+            style="background-color: #d32f2f; color: white; border: none; padding: 10px 20px; 
+            font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px;
+            box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2); transition: 0.3s;">
+            Close
+        </button>
+
+    </div>
+</div>
+
+    <?php
+
+}
+?>
+
+           
+
+               
+                    <!-- <label for="login-email">Email:</label>
+                     <input type="email" id="login-email" required>
                     <input type="text" name="userEmailByLogin"
                         value="<?php echo isset($user_emailByLogin) ? htmlspecialchars($user_emailByLogin) : ""; ?>"
                         placeholder="Enter your email" required>
                     <label for="login-password">Password:</label>
-                    <!-- <input type="password" id="login-password" required> -->
+                  <input type="password" id="login-password" required> 
                     <input type="password" name="userPasswordByLogin"
                         value="<?php echo isset($user_passwordByLogin) ? htmlspecialchars($user_passwordByLogin) : ""; ?>"
-                        placeholder="Enter your password" required>
-                    <button type="submit" class="submit-button" name="login">Login</button>
-
-                </form>
-            </div>
+                        placeholder="Enter your password" required> -->
+                  
 
             <div id="signup-form" class="form-card glass ">
                 <h1>Sign Up</h1>

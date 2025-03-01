@@ -264,22 +264,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 ?>
                 <!-- Modal structure -->
-<div id="errorModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000;">
-    <div style="position: relative; margin: 20% auto; background-color: #fff; padding: 20px; width: 300px; border-radius: 5px; text-align: center;">
-        <h3 style="color: #e74c3c;">Error</h3>
-        <p id="errorMessage" style="color: #e74c3c;"></p>
-        <button onclick="closeErrorModal()" style="background-color: #e74c3c; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 3px;">Close</button>
-    </div>
-</div>
-<div id="successModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000;">
-    <div style="position: relative; margin: 20% auto; background-color: #fff; padding: 20px; width: 300px; border-radius: 5px; text-align: center;">
-        <h3 style="color:rgb(84, 194, 0);">Success</h3>
-        <br>
-        <br>
-        <h4 id="successMessage" style="color:rgb(2, 0, 0);"></h4>
+
+
+<div id="errorModal" style=" display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background-color: rgba(0, 0, 0, 0.6); z-index: 1000;">
+    
+    <div style="position: relative; margin: 15% auto; background-color: #ffebee; padding: 25px; width: 350px; 
+        border-radius: 10px; text-align: center; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); 
+        border: 2px solid #d32f2f; animation: fadeIn 0.4s ease-in-out;">
+        
+        <!-- Error Icon -->
+        <div style="width: 60px; height: 60px; background-color: #d32f2f; color: white; 
+            font-size: 30px; font-weight: bold; line-height: 60px; text-align: center; 
+            border-radius: 50%; margin: -50px auto 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);">
+            !
+        </div>
+
+        <h3 style="color: #b71c1c; margin-bottom: 10px; font-family: Arial, sans-serif;">Error</h3>
+
+        <hr style="border: 2px solid #d32f2f; width: 100%;">
+
+            <p id="errorMessage" style="color: #333; font-size: 16px; font-family: Arial, sans-serif; 
+                margin: 15px 0; padding: 10px; background: #ffcdd2; border-radius: 5px; box-shadow: inset 0px 1px 4px rgba(0,0,0,0.1);">
+            </p>
+
+
+        <!-- Close Button -->
+        <button onclick="document.getElementById('errorModal').style.display='none'" 
+            style="background-color: #d32f2f; color: white; border: none; padding: 10px 20px; 
+            font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px;
+            box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2); transition: 0.3s;">
+            Close
+        </button>
 
     </div>
 </div>
+<div id="successModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background-color: rgba(0, 0, 0, 0.5); z-index: 1000;">
+    
+    <div style="position: relative; margin: 15% auto; background-color: #e8f5e9; padding: 25px; width: 350px; 
+        border-radius: 10px; text-align: center; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); 
+        border: 2px solid #388e3c; animation: fadeIn 0.4s ease-in-out;">
+        
+        <!-- Success Icon -->
+        <div style="width: 60px; height: 60px; background-color: #388e3c; color: white; 
+            font-size: 30px; font-weight: bold; line-height: 60px; text-align: center; 
+            border-radius: 50%; margin: -50px auto 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);">
+            ✓
+        </div>
+
+        <h3 style="color: #2e7d32; margin-bottom: 10px; font-family: Arial, sans-serif;">Success</h3>
+
+        <hr style="border: 2px solid #388e3c; width: 100%;">
+
+        <p id="successMessage" style="color: #333; font-size: 16px; font-family: Arial, sans-serif; 
+            margin: 15px 0; padding: 10px; background: #c8e6c9; border-radius: 5px; box-shadow: inset 0px 1px 4px rgba(0,0,0,0.1);">
+        </p>
+
+        <!-- Close Button -->
+        <button onclick="document.getElementById('successModal').style.display='none'" 
+            style="background-color: #388e3c; color: white; border: none; padding: 10px 20px; 
+            font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px;
+            box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2); transition: 0.3s;">
+            Close
+        </button>
+
+    </div>
+</div>
+
                 
         
             </div>
@@ -345,7 +397,7 @@ function showSuccessImageUploadModal() {
     localStorage.setItem("showModal", "true");
     setTimeout(function() {
         window.location.reload();  // Reload the page
-    }, 1000); 
+    }, 1700); 
 }
 document.getElementById('imageUploadForm').addEventListener('submit', function(e) {
     e.preventDefault();  // Prevent the form from submitting the traditional way
@@ -355,8 +407,8 @@ document.getElementById('imageUploadForm').addEventListener('submit', function(e
 
     const form =this;
     // Validate if a file has been selected
-    if (!file) {
-        return false; // Stop the submission if no file is selected
+    if (file.length == "0") {
+        return false; 
     }
     // Get the form data, including the file input
     const formData = new FormData(this);

@@ -1,10 +1,27 @@
 <?php
+
+
 require "../helperFunction/CheckLogin.php";
 CheckLogin::islogin();
 
-echo'<!DOCTYPE html>
-<html lang="en">
-<head>
+
+if(stripos($_SERVER['SCRIPT_NAME'], "/dynaform") !== false){
+    echo'<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin Dashboard</title>
+        <link rel="stylesheet" href="../admin/style.css">
+        <link rel="stylesheet" href="../admin/dashboard.css">
+        <link rel="stylesheet" href="../admin/form.css">
+    </head>';
+}
+else{
+
+    echo'<!DOCTYPE html>
+    <html lang="en">
+    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
@@ -12,20 +29,23 @@ echo'<!DOCTYPE html>
     <link rel="stylesheet" href="table.css">
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="form.css">
-</head>
-<body>
+    </head>';
+    }
+
+echo'<body>
     <div class="dashboard">
         <!-- Sidebar/Navbar -->
         <nav class="sidebar">
             <h2>Admin Dashboard</h2>
             <ul>
-                <li><a href="dashboard.php" class="nav-link">Dashboard</a></li>
-                <li><a href="roomTable.php" class="nav-link">Rooms</a></li>
-                <li><a href="booking.php" class="nav-link" data-target="bookings">Bookings</a></li>
-                <li><a href="userTable.php" class="nav-link" data-target="users">Users</a></li>
-                <li><a href="approve.php" class="nav-link" data-target="settings">Approve List</a></li>
-                <li><a href="media.php" class="nav-link" data-target="media">Media  Manager</a></li>
-                <li><a href="dbConnect.php" class="nav-link" id="logoutBtn" >Logout</a></li>
+                <li><a href="/admin/dashboard.php" class="nav-link">Dashboard</a></li>
+                <li><a href="/admin/roomTable.php" class="nav-link">Rooms</a></li>
+                <li><a href="/admin/booking.php" class="nav-link" data-target="bookings">Bookings</a></li>
+                <li><a href="/admin/userTable.php" class="nav-link" data-target="users">Users</a></li>
+                <li><a href="/admin/approve.php" class="nav-link" data-target="settings">Approve List</a></li>
+                <li><a href="/admin/media.php" class="nav-link" data-target="media">Media  Manager</a></li>
+                <li><a href="/admin/formManagerTable.php" class="nav-link" data-target="media">Form  Manager</a></li>
+                <li><a href="/admin/dbConnect.php" class="nav-link" id="logoutBtn" >Logout</a></li>
             </ul>
         </nav>
         </div>';

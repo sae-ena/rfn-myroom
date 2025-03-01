@@ -1,4 +1,6 @@
 <?php
+
+
 $host = "mysql-29620eed-kidssujal-9bd8.j.aivencloud.com"; // or your host IP
 $port = 18250; // your MySQL port (default is 3306)
 $username = "avnadmin"; // your MySQL username

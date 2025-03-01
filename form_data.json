@@ -14,6 +14,13 @@
         "required": true
     },
     {
+        "label": "RoomType",
+        "type": "email",
+        "name": "name",
+        "placeholder": "",
+        "required": true
+    },
+    {
         "label": "Gender",
         "type": "select",
         "name": "gender",
@@ -26,9 +33,16 @@
         ]
     },
     {
-        "label": "RoomType",
-        "type": "email",
-        "name": "name",
+        "label": "Price",
+        "type": "text",
+        "name": "price",
+        "placeholder": "Enter the price",
+        "required": true
+    },
+    {
+        "label": "Adress",
+        "type": "text",
+        "name": "address",
         "placeholder": "",
         "required": true
     }
