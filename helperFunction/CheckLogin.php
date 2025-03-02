@@ -14,7 +14,7 @@ class CheckLogin{
             exit(); 
         }
         elseif (! isset($_SESSION['user_type']) && ! isset($_SESSION['user_email'])) {
-            header("Location: login.php");
+            header("Location: /admin/login.php");
             exit(); 
         }
        
