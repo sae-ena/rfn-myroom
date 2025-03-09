@@ -58,14 +58,13 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                     if($row['user_type'] == "admin"){
 
                     
-                   
-                    session_start();
                     $_SESSION['user_name'] = $row['user_name'];
                     $_SESSION['user_email'] = $user_emailByLogin;
                     $_SESSION['user_type'] === "admin";
 
                     
                     header("Location: dashboard.php");
+                    exit();
                     }
                     else{
                         $login_error = "Unauthorized.";

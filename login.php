@@ -90,7 +90,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                 if($row['user_type'] == 'user'){
                 if ($row['user_status'] == 'active') {
                     // Successful login, start session and redirect
-                    session_start();
+                  
                     $_SESSION['user_name'] = explode(' ', trim($row['user_name']))[0];
                     $_SESSION['user_email'] = $user_emailByLogin;
                     $_SESSION['user_type'] = "user";
