@@ -1,20 +1,26 @@
-# Use the official PHP 8.0 image as the base
+# Use an official PHP image with Apache
 FROM php:8.0-apache
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libzip-dev \
-    unzip \
-    && docker-php-ext-install zip pdo_mysql
+# Install required PHP extensions (for example, MySQL and PDO)
+RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install gd pdo pdo_mysql && \
+    apt-get clean
 
-# Enable Apache rewrite module
+# Enable Apache mod_rewrite for URL rewriting
 RUN a2enmod rewrite
 
-# Set the document root to Laravel's public directory
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+# Copy your PHP files into the Apache server's document root
+COPY . /var/www/html/
 
-# Copy the application files to the container
-COPY . /var/www/html
+# Set the working directory to /var/www/html (document root of Apache)
+WORKDIR /var/www/html/
 
-# Set the working directory
-WORKDIR /var/www/html
+# Set file permissions for Apache to serve files
+RUN chown -R www-data:www-data /var/www/html
+
+# Expose port 80 to the outside world
+EXPOSE 80
+
+# Start Apache in the foreground
+CMD ["apache2-foreground"]
