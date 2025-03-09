@@ -43,8 +43,6 @@ echo'<body>
                 <li><a href="/admin/booking.php" class="nav-link" data-target="bookings">Bookings</a></li>
                 <li><a href="/admin/userTable.php" class="nav-link" data-target="users">Users</a></li>
                 <li><a href="/admin/approve.php" class="nav-link" data-target="settings">Approve List</a></li>
-                <li><a href="/admin/media.php" class="nav-link" data-target="media">Media  Manager</a></li>
-                <li><a href="/admin/formManagerTable.php" class="nav-link" data-target="media">Form  Manager</a></li>
                 <li><a href="/admin/dbConnect.php" class="nav-link" id="logoutBtn" >Logout</a></li>
             </ul>
         </nav>
@@ -54,7 +52,12 @@ echo'<body>
 <script>
 let btn = document.getElementById("logoutBtn");
 btn.onclick = function(event) {
+    
+    // <li><a href="/admin/media.php" class="nav-link" data-target="media" disable>Media  Manager</a></li>
+                // <li><a href="/admin/formManagerTable.php" class="nav-link" data-target="media" disabled>Form  Manager</a></li>
     // <li><a href="media.php" class="nav-link" data-target="media">Media  Manager</a></li>
+                // <li><a href="/admin/media.php" class="nav-link" data-target="media">Media  Manager</a></li>
+                // <li><a href="/admin/formManagerTable.php" class="nav-link" data-target="media">Form  Manager</a></li>
             // Prevent the default action of the link (redirection)
             event.preventDefault();
             

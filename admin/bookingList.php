@@ -134,7 +134,7 @@ if (is_array($rooms) && count($rooms) == 0) {
                if ($rooms[0]["room_image"] != null) {
                     echo '<div class="container" style="position: relative; width: 100%;">';
                     echo '<img src="' . $rooms[0]["room_image"] . '" alt="bookingRoom Image" style="width: 100%; height: auto; border-radius: 19px; border: 1px solid black; display: block; object-fit: cover;">';
-                    echo '<h2 style="position: absolute; bottom: 20px; left: 20px; width: 52%; background-color: rgba(255, 107, 1, 0.8); color: black; text-align: center; font-size: 24px; font-family: \'Roboto\', sans-serif; text-transform: uppercase; letter-spacing: 2px; padding: 10px; box-shadow: 0 4px 12px rgba(20, 13, 13, 0.3); text-shadow: 2px 2px 3px rgb(238, 238, 238), -2px -2px 5px #ffffff, 2px -2px 5px #ffffff, -2px 2px 5px #ffffff;border-radius:36px">' . $rooms[0]['room_name'] . '</h2>';
+                    echo '<h2 style="position: absolute; top: 22px; left: 20px; width: auto; background-color: rgba(255, 255, 255, 0.8); color: black; font-size: 20px; font-family: \'Roboto\', sans-serif; text-transform: uppercase; letter-spacing: 2px; padding: 10px; box-shadow: 0 4px 12px rgba(20, 13, 13, 0.3); text-shadow: 2px 2px 3px rgb(238, 238, 238), -2px -2px 5px #ffffff, 2px -2px 5px #ffffff, -2px 2px 5px #ffffff;border-radius:36px">' . $rooms[0]['room_name'] . '</h2>';
                     echo '</div>';
                 
                    echo '</div>';

@@ -409,7 +409,7 @@ document.getElementById('register-form').addEventListener('submit', function(eve
     // Validate Password (minimum 8 characters, one uppercase letter, one number, and one special character)
     const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
     if (!passwordPattern.test(password)) {
-        showAlert("Password must be at least 8 characters, including at least one uppercase,number and special char.");
+        showAlert("Password: Min 8 chars, 1 uppercase, 1 number, 1 symbol");
         valid = false;
     }
 

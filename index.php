@@ -68,19 +68,16 @@ if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
     </div>
     <div class="container-md container-fluid-lg d-flex justify-content-around mt-4 gap-5">
         <div class="col-5">
-            <img src="images/interrioroom.jpg" alt="" width="100%" />
+            <img src="/admin/uploads/67ae1392c5b2a_New-Furnished-Apartment.png" alt="" width="100%" style="border-radius: 21px;" />
         </div>
         <div class="col-6">
             <div class="texts">
-                <h2>Rooms</h2>
                 <p class="fs-5">
-                    Dealers can list available rooms with detailed information, including room type, price, amenities,
-                    location, and high-quality images. Each listing is designed to provide all necessary details to help
-                    users make informed decisions.
+                Our platform helps you discover the best room listings from trusted dealers. Each listing includes important details like room type, price, amenities, and location, along with high-quality images.Our easy-to-use interface makes the process simple and hassle-free.
                 </p>
 
-                <h2>Amenities</h2>
                 <ul class="fs-5">
+                    <h3>Amenities</h3>
                     <li>Easy Online Booking: Book rooms with a few clicks.</li>
                     <li>Availability Notifications: Get alerts for room availability or price drops.</li>
                     <li>Dealer Profiles & Reviews: Read reviews and ratings of dealers.</li>
@@ -92,9 +89,7 @@ if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
                     </li>
                     <li>Smart TV features.</li>
                 </ul>
-                <div class="text-center mt-4">
-                    <button class="btn btn-warning ml-5 fs-6">Find Out More</button>
-                </div>
+                
             </div>
         </div>
     </div>

@@ -9,7 +9,7 @@
   font-family: 'Arial', sans-serif;
 }
 .gallery_section {
-  padding: 50px 20px; /* Make the gradient larger for smoother transitions */
+  padding: 10px 20px; /* Make the gradient larger for smoother transitions */
   animation: gradientAnimation 8s ease infinite; /* Gradient color animation */
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Slight shadow for depth */
@@ -317,6 +317,7 @@ h2, h4, h5 {
 
   padding: 50px 10px;
   gap: 7rem;
+  border-radius: 11px;
 }
 .aboutSectionLeft h2 {
   text-align: center;
@@ -349,7 +350,7 @@ h2, h4, h5 {
   align-items: center;
   margin-top: 0px;
   padding: 10px;
-  border: 22px solid;
+  border: 15px solid;
   border-image: linear-gradient(45deg, #ff6a00, #3f87a6, #ff9d47) 1; /* Animated border gradient */
   border-radius: 21px 12px;
   position: relative;
@@ -429,13 +430,15 @@ h2, h4, h5 {
   height: 490px;
   background-image: url('../images/Room Finder Nepal.png');
   background-size: cover;
+  border-radius: 17px;
   
 }
 
 /* Interior Info Section */
 .interior-info-section {
+  margin-top: 13px;
   padding: 50px 20px;
-  background: rgb(255, 255, 255);
+  background: #ff9d47;
   background-size: 400% 400%;
   animation: gradientShift 8s ease infinite, shadowPulse 2s infinite alternate; /* Gradient and shadow animations */
   border-radius: 15px;
@@ -445,34 +448,6 @@ h2, h4, h5 {
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
-/* Animated Gradient */
-@keyframes gradientShift {
-  0% {
-    background: linear-gradient(135deg, #3f87a6, #ff9d47, #ff6a00);
-    background-position: 0% 50%;
-  }
-  50% {
-    background: linear-gradient(135deg, #ff6347, #ff4500, #ff9d47);
-    background-position: 100% 50%;
-  }
-  100% {
-    background: linear-gradient(135deg, #8e2de2, #e07b00, #ff1493);
-    background-position: 0% 50%;
-  }
-}
-
-/* Shadow Pulse Animation */
-@keyframes shadowPulse {
-  0% {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  }
-  50% {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-  }
-  100% {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  }
-}
 
 
 
@@ -506,7 +481,7 @@ h2, h4, h5 {
 .interior-info-section:hover h2,
 .interior-info-section:hover p {
   transform: scale(1.0); /* Text zoom effect */
-  color: #ff9d47; /* Text color change on hover */
+  color: whitesmoke;
 }
 
 .interior-info-section .title h4 {

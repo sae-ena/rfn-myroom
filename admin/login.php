@@ -42,7 +42,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
     // Check if email and password are not empty
     if (!empty($user_emailByLogin) && !empty($user_passwordByLogin)) {
         // Query to check if the user email exists in the database
-        $query = "SELECT user_id, user_password, user_status FROM users WHERE user_email = '$user_emailByLogin' LIMIT 1";
+        $query = "SELECT user_id, user_password, user_status ,user_type FROM users WHERE user_email = '$user_emailByLogin' LIMIT 1";
         $result = $conn->query($query);
 
         // Check if the query returned a result (i.e., the email exists)
@@ -54,14 +54,22 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                 // Check if the user is active
 
                 if ($row['user_status'] == 'active') {
-                    // Successful login, start session and redirect
+
+                    if($row['user_type'] == "admin"){
+
+                    
+                   
                     session_start();
                     $_SESSION['user_name'] = $row['user_name'];
                     $_SESSION['user_email'] = $user_emailByLogin;
                     $_SESSION['user_type'] === "admin";
 
-                    // Redirect to the dashboard or main page (replace 'dashboard.php' with the actual destination)
+                    
                     header("Location: dashboard.php");
+                    }
+                    else{
+                        $login_error = "Unauthorized.";
+                    }
 
                 } else {
                     // User is inactive
@@ -69,11 +77,11 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                 }
             } else {
                 // Password is incorrect
-                $login_error = "Invalid email or password.";
+                $login_error = "Invalid password.";
             }
         } else {
             // Email does not exist
-            $login_error = "Invalid email or password.";
+            $login_error = "Invalid email address.";
         }
     } else {
         // Email or password is empty

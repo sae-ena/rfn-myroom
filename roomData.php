@@ -60,7 +60,7 @@ exit();// Stop further execution
 }
 if(isset($_SESSION['auth_id']) && $_SESSION['user_type'] == "user"){
  $userID = $_SESSION['auth_id'];
-    $query = "SELECT r.room_id,r.room_status,r.room_location,  r.room_name, r.room_image, b.is_active,r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id FROM  rooms r LEFT JOIN  bookings b ON b.room_id = r.room_id AND b.user_id = '$userID'  WHERE ( r.room_status ='active') ORDER BY r.created_at DESC  LIMIT 26;";
+    $query = "SELECT r.room_id,r.room_status,r.room_location,  r.room_name, r.room_image, b.is_active,r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id ,b.user_id FROM  rooms r LEFT JOIN  bookings b ON b.room_id = r.room_id AND b.user_id = '$userID'  WHERE ( r.room_status ='active') ORDER BY r.created_at DESC  LIMIT 26;";
 }else{
 
     $query = "SELECT  r.room_id,r.room_status,  r.room_name,r.room_location, r.room_image, b.is_active,r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id FROM rooms r Left join bookings b ON r.room_id = b.room_id  where (b.status != 'confirmed' OR b.booking_id IS NULL)  AND r.room_status = 'active' ORDER BY r.created_at DESC  LIMIT 26;";
@@ -76,15 +76,20 @@ if (isset($searchResult) && is_array($searchResult)) {
   <div class="Rooms-12">
   <?php
   foreach ($searchResult as $room) {
+    
+
       // Static unique ID set to 12 for all rooms
       echo '<div class="room-container-12">';
        
-                if((isset($_SESSION['auth_id']) && $_SESSION['user_type'] == "user" ) && ($room['status'] === "pending" && $room['is_active'] == true)){
-                   echo' <div style="position: absolute; top: 0; right: 0; background-color: rgba(0, 255, 47, 0.97); color: white; padding: 7px; z-index: 1; border-bottom-left-radius: 22px;">
-      
-                   <strong>   BOOKED</strong>
-                   </div>';
-                   }
+      if(isset($_SESSION['auth_id']) && $_SESSION['auth_id']){
+
+          if(($_SESSION['auth_id'] == $room['user_id'] ) && ($room['status'] === "pending" && $room['is_active'] == true)){
+              echo' <div style="position: absolute; top: 0; right: 0; background-color: rgba(0, 255, 47, 0.97); color: white; padding: 7px; z-index: 1; border-bottom-left-radius: 22px;">
+              
+              <strong>   BOOKED</strong>
+              </div>';
+            }
+        }
     if((isset($_SESSION['auth_id']) && $_SESSION['user_type'] == "user" ) && ($room['status'] === "canceled" && $room['is_active'] == true)){
         echo' <div style="position: absolute; top: 0; right: 0; background-color: rgba(255, 0, 0, 0.8); color: white; padding: 5px; z-index: 1; border-bottom-left-radius: 22px; padding-left: 20px; padding-right: 20px;">
 
@@ -112,7 +117,7 @@ if (isset($searchResult) && is_array($searchResult)) {
                           </form>
                       </div>
   
-                      <?php  if (isset($_SESSION['auth_id'])  && (! isset($room['is_active']) || $room['is_active'] == false)) : ?>
+                      <?php  if (isset($_SESSION['auth_id']) && ($_SESSION['auth_id'] != $room['user_id']) && ( isset($room['is_active']) || $room['is_active'] == true)) : ?>
                           <div class="room-book-now-button-12">
                               <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
                                   <input type="hidden" name="room_id" value="<?php echo $room['room_id']; ?>">
@@ -149,7 +154,8 @@ if (isset($searchResult) && is_array($searchResult)) {
            
             <div class="gallery-item1">
                 <?php 
-                if((isset($_SESSION['auth_id']) && $_SESSION['user_type'] == "user" ) && ($room['status'] === "pending" && $room['is_active'] == true)){
+               
+                if(((isset($_SESSION['auth_id']) ) && ($_SESSION['auth_id']== $room['user_id']) && $_SESSION['user_type'] == "user" ) && ($room['status'] === "pending" && $room['is_active'] == true)){
                    echo' <div style="position: absolute; top: 0; right: 0; background-color: rgba(0, 255, 47, 0.97); color: white; padding: 7px; z-index: 1; border-bottom-left-radius: 22px;">
       
                    <strong>   BOOKED</strong>

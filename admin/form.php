@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize input data using mysqli_real_escape_string (optional if using prepared statements)
     $roomTitle = mysqli_real_escape_string($conn, $_POST['title']);
     $roomLocation = mysqli_real_escape_string($conn, $_POST['location']);
-    $roomPrice = floatval($_POST['price']); // Ensuring it's a number
+    $roomPrice = floatval($_POST['price']); 
     $roomStatus = mysqli_real_escape_string($conn, $_POST['status']);
     $roomType = mysqli_real_escape_string($conn, $_POST['type']);
     $roomDescription = mysqli_real_escape_string($conn, $_POST['description']);
@@ -41,9 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_file_name = mysqli_real_escape_string($conn, $_POST['room_image']);
     if(isset($_POST['enabledEdit']))  $EditMode = mysqli_real_escape_string($conn, $_POST['enabledEdit']);
 
-    if (empty($roomTitle) || empty($roomLocation) || empty($roomPrice) || empty($roomStatus) || empty($roomType)) {
-        $form_error = "All fields are required.";
-    }
+  
 
     if(strlen($roomTitle) > 155){
         $form_error = "Title should be less than 155 characters";
@@ -84,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
         // Validate file type
         if (!in_array(mime_content_type($file_tmp), $allowed_types)) {
-            $validationError = "Error: Only JPEG, PNG, and GIF files are allowed.";
+            $validationError = "Error: Only JPEG, PNG files are allowed.";
           
         }
     
@@ -103,18 +101,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } 
     
 
-    // $roomTitle = $_POST['title'] ?? '';   // Default to empty if not set
-    // $roomLocation = $_POST['location'] ?? '';
-    // $roomPrice = $_POST['price'] ?? '';
-    // $roomStatus = $_POST['status'] ?? '';
-    // $roomType = $_POST['type'] ?? '';
-    // $roomDescription = $_POST['description'] ?? '';
-    // $roomImage = $_POST['photo'] ?? '';
     
-    empty($roomTitle) ? $form_error = "Title field is Required" : "";
-    empty($roomPrice) ? $form_error = "Price field is Required" : "";
+    empty($roomStatus) ? $form_error = "Status field is Required" : "";
     empty($roomType) ? $form_error = "RoomType field is Required" : "";
+    empty($imagePath) ? $form_error = "Image is Required" : "";
+    empty($roomType) ? $roomType = "Room Type  is Required" : "";
+    empty($roomPrice) ? $form_error = "Price field is Required" : "";
+    empty($roomLocation) ? $form_error = "Location  is Required" : "";
+    empty($roomTitle) ? $form_error = "Title field is Required" : "";
 
+    if (!preg_match('/[a-zA-Z]/', $roomTitle)) {
+        $form_error = "Invalid Title field.";
+    }
+    
+
+    if(! isset($form_error) ){
     if(is_numeric($EditMode)){
 
     if (! isset($form_error)) {
@@ -159,6 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         } 
     }
+}
 }
 }
 
