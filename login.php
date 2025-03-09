@@ -1,5 +1,5 @@
 <?php
-session_start();
+// session_start();
 ?>
 <style>
     .alert-box {
@@ -101,6 +101,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
 
                     // Redirect to the dashboard or main page (replace 'dashboard.php' with the actual destination)
                     header("Location: index.php");
+                    exit();
 
                 } else {
                     // User is inactive

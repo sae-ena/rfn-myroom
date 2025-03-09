@@ -177,7 +177,7 @@ h2, h4, h5 {
 /* Home Section */
 .home {
   position: relative;
-  background-image: url('/admin/uploads/67c1e540a8427_Room_Finder_Nepal.png');
+  background-image: url('admin/uploads/67c1e540a8427_Room_Finder_Nepal.png');
   background-size: cover;
   background-position: center;
   height: 100vh;

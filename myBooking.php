@@ -234,7 +234,7 @@ if (isset($_GET['status']) && ($_GET['status'] === "pending" || $_GET['status'] 
                 WHERE b.user_id = " . $_SESSION['auth_id'] . " AND b.is_active = 1;";
 }
 
-$result = $conn->execute_query($query);
+$result = $conn->query($query);
 ?><form action="myBooking.php" method="GET" class="status-filter-form" style=" align-items: flex-start; gap: 15px; padding: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); max-width: 300px; width: 100%; margin: 0 auto;">
 <label for="status-select" style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 5px;">Filter by Status:</label>
 <select name="status" id="status-select" onchange="this.form.submit()" style="padding: 10px; font-size: 14px; border-radius: 8px; border: 1px solid #ddd; transition: all 0.3s ease;">
