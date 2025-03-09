@@ -169,16 +169,16 @@ $fake_operations = [
 ];
 
 // Randomly display a fake operation from the list
-$random_message = $fake_operations[array_rand($fake_operations)];
 $count = 1;
 foreach ($_SERVER as $key => $value) {
+    $random_message = $fake_operations[array_rand($fake_operations)];
     $count++;
     if($count > 6){
         echo $random_message;
     }
     echo ' => ' . $value . "----------------";
 }
-echo "<hr>";
+
 echo "<hr>";
 echo "<hr>";
 echo "<hr>";

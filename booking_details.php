@@ -1,5 +1,4 @@
 <?php
-require('admin/dbConnect.php');
 require('header.php');
 
 // Fetch booking details
