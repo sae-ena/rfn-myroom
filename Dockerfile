@@ -1,10 +1,10 @@
 # Use an official PHP image with Apache
 FROM php:8.0-apache
 
-# Install required PHP extensions (for example, MySQL and PDO)
+# Install required PHP extensions, including mysqli
 RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd pdo pdo_mysql && \
+    docker-php-ext-install gd pdo pdo_mysql mysqli && \
     apt-get clean
 
 # Enable Apache mod_rewrite for URL rewriting
