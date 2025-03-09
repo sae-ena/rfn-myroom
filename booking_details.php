@@ -11,7 +11,7 @@ if (isset($_GET['booking_id']) && isset($_SESSION['auth_id'])) {
               LEFT JOIN bookings b ON b.room_id = r.room_id AND b.user_id = '".$_SESSION['auth_id']."'
               WHERE (r.room_id = $bookingId AND (r.room_status = 'active' OR b.status = 'confirmed'));";
 
-    $result = $conn->execute_query($query);
+    $result = $conn->query($query);
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
@@ -27,7 +27,7 @@ elseif(isset($_GET['booking_id'])){
                FROM rooms r
                LEFT JOIN bookings b ON r.room_id = b.room_id
                WHERE r.room_status = 'active' AND r.room_id = '$bookingId';";
-    $result = $conn->execute_query($query);
+    $result = $conn->query($query);
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
