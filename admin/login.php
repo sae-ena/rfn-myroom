@@ -1,7 +1,6 @@
 <?php
 session_start();
 require('dbConnect.php');
-require('../helperFunction/SweetAlert.php');
 // Initialize variables for login data
 $user_emailByLogin = "";
 $user_passwordByLogin = "";
@@ -43,7 +42,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
     // Check if email and password are not empty
     if (!empty($user_emailByLogin) && !empty($user_passwordByLogin)) {
         // Query to check if the user email exists in the database
-        $query = "SELECT user_id, user_password, user_status ,user_type FROM users WHERE user_email = '$user_emailByLogin' LIMIT 1";
+        $query = "SELECT user_id, user_password, user_status ,user_type,user_name FROM users WHERE user_email = '$user_emailByLogin' LIMIT 1";
         $result = $conn->query($query);
 
         // Check if the query returned a result (i.e., the email exists)
@@ -141,6 +140,8 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Sign Up & Login</title>
     <link rel="stylesheet" href="login.css">
+    <?php 
+require('../helperFunction/SweetAlert.php'); ?>
 </head>
 
 <body>
