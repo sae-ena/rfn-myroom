@@ -1,6 +1,7 @@
 <?php
 session_start();
 require('dbConnect.php');
+require('../helperFunction/SweetAlert.php');
 // Initialize variables for login data
 $user_emailByLogin = "";
 $user_passwordByLogin = "";
@@ -10,7 +11,7 @@ $user_passwordByLogin = "";
 $form_error = null;
 
 if (isset($_SESSION['user_email'])) {
-    header("Location: dashboard.php");
+    header("Location:dashboard.php");
     exit(); // Ensure no further code is executed after the redirection
 }
 
@@ -63,7 +64,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                     $_SESSION['user_type'] === "admin";
 
                     
-                    header("Location: dashboard.php");
+                    header("Location:dashboard.php");
                     exit();
                     }
                     else{
@@ -144,8 +145,6 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Sign Up & Login</title>
     <link rel="stylesheet" href="login.css">
-    <?php
-    require('../helperFunction/SweetAlert.php'); ?>
 </head>
 
 <body>
