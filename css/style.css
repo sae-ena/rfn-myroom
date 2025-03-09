@@ -223,12 +223,11 @@ h2, h4, h5 {
   font-weight: 600;
 }
 
-
 /* Hero Section */
 .hero {
   height: 100vh;
   width: 100%;
-  background-image: url('/admin/uploads/67c1e540a8427_Room_Finder_Nepal.png'); /* Your background image */
+  background-image: url('/admin/uploads/RealEstateAgentvs.MortgageBrokerWhatstheDifference-6260ea50d1044056899d8cf6dff7d47d.jpg'); /* Your background image */
   background-position: center;
   background-size: cover;
   display: flex;
