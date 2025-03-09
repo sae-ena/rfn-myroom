@@ -5,8 +5,9 @@ FROM php:8.0-apache
 RUN apt-get update && \
     apt-get install -y \
     libapache2-mod-php \
-    php8.0-mysql \
+    php8.0-mysqli \
     && apt-get clean
+
 
 
 # Enable Apache mod_rewrite (if needed for routing or pretty URLs)
