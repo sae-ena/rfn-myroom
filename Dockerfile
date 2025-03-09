@@ -2,11 +2,13 @@
 FROM php:8.0-apache
 
 # Install required packages and PHP extensions
-RUN apt-get update && \
+
+    RUN apt-get update && \
     apt-get install -y \
     libapache2-mod-php \
-    php-mysqli \
+    php-mysql \
     && apt-get clean
+
 
 # Enable Apache mod_rewrite (if needed for routing or pretty URLs)
 RUN a2enmod rewrite
