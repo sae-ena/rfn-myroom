@@ -60,7 +60,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                     $_SESSION['user_name'] = $row['user_name'];
                     $_SESSION['user_email'] = $user_emailByLogin;
                     $_SESSION['user_type'] = "admin";
-                    header("Location:dashboard.php");
+                    header("Location:/admin/dashboard.php");
                     exit();
                     }
                     else{
