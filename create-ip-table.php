@@ -6,7 +6,7 @@
     $dbname = "rf_db"; 
 
 // Create a connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli($host, $username, $password, $dbname,$port);
 
 // Check connection
 if ($conn->connect_error) {
