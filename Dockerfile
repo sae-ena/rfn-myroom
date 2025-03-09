@@ -11,11 +11,11 @@ RUN apt-get update && \
 # Enable Apache mod_rewrite (if needed for routing or pretty URLs)
 RUN a2enmod rewrite
 
-# Copy your PHP project files into the container
-COPY ./src /var/www/html/
+# # Copy your PHP project files into the container
+# COPY ./src /var/www/html/
 
-# Set permissions for Apache
-RUN chown -R www-data:www-data /var/www/html
+# # Set permissions for Apache
+# RUN chown -R www-data:www-data /var/www/html
 
 # Expose port 80 for web traffic
 EXPOSE 80
