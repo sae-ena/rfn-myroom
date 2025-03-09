@@ -2,11 +2,10 @@
 FROM php:8.0-apache
 
 # Install required packages and PHP extensions
-
-    RUN apt-get update && \
+RUN apt-get update && \
     apt-get install -y \
     libapache2-mod-php \
-    php-mysql \
+    php8.0-mysql \
     && apt-get clean
 
 
