@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <style>
     .alert-box {
     position: fixed;
@@ -48,7 +51,6 @@ input[type="password"] {
 }
 </style>
 <?php
-session_start();
 require('admin/dbConnect.php');
 require('helperFunction/InsertRoomData.php');
 // Initialize variables for login data
