@@ -1,6 +1,6 @@
 <?php
-require('helperFunction/roomFetchForWebsite.php');
-require('helperFunction/InsertRoomData.php');
+require('/helperFunction/roomFetchForWebsite.php');
+require('/helperFunction/InsertRoomData.php');
 
 
 if (isset($_POST['room_id']) && ($_SERVER['REQUEST_METHOD'] === 'POST')) {

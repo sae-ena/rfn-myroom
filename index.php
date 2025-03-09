@@ -1,7 +1,9 @@
-<?php require('header.php') ; 
+<?php
+  if (!isset($_SESSION)) {
+    session_start();
+  }
+require('header.php') ; 
 
-?>
-<?php 
 if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
     $searchLocation = $_GET['searchLocation'];
     $searchType = $_GET['searchRoomType'] ?? "";

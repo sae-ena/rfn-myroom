@@ -13,9 +13,6 @@
   <?php
 require("helperFunction/SweetAlert.php");
 require_once('helperFunction/helpers.php');
-  if (!isset($_SESSION)) {
-    session_start();
-  }
   ?>
   <nav class="navbar">
     <div class="container">

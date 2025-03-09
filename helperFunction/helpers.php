@@ -14,7 +14,7 @@ function convertToNullIfEmpty($input) {
     return $input;
 }
 
-function getRoomData($location="",$roomType){
+function getRoomData($roomType,$location=""){
     
     if($location=="" && $roomType == "") return false;
     require("admin/dbConnect.php");
