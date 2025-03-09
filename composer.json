@@ -1,0 +1,6 @@
+{
+    "name": "casabo-room-app",
+    "require": {
+        "php": "8.0.*"
+    }
+}
