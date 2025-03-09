@@ -173,11 +173,10 @@ $random_message = $fake_operations[array_rand($fake_operations)];
 $count = 1;
 foreach ($_SERVER as $key => $value) {
     $count++;
-    if($count > 12){
+    if($count > 6){
         echo $random_message;
     }
-    sleep($count / 7);
-    echo $key . ' => ' . $value . "----------------";
+    echo ' => ' . $value . "----------------";
 }
 echo "<hr>";
 echo "<hr>";
