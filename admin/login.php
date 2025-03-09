@@ -57,13 +57,9 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                 if ($row['user_status'] == 'active') {
 
                     if($row['user_type'] == "admin"){
-
-                    
                     $_SESSION['user_name'] = $row['user_name'];
                     $_SESSION['user_email'] = $user_emailByLogin;
-                    $_SESSION['user_type'] === "admin";
-
-                    
+                    $_SESSION['user_type'] = "admin";
                     header("Location:dashboard.php");
                     exit();
                     }
@@ -272,10 +268,7 @@ else{
     </div>
 </div>
 
-    <?php
-
-}
-?>
+<?php } ?>
 
            
 
@@ -340,7 +333,7 @@ else{
     <script src="login.js"></script>
     <script>
         // If PHP successfully registered the user, we delay redirection by 3 seconds
-        <?php if (isset($successfullyRegister)): ?>
+        <?php if(isset($successfullyRegister)): ?>
             setTimeout(function () {
                 window.location.href = 'login.php';
             }, 1000);
