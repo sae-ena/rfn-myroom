@@ -1,6 +1,3 @@
-<?php
-// session_start();
-?>
 <style>
     .alert-box {
     position: fixed;
@@ -62,7 +59,7 @@ $user_passwordByLogin = "";
 $form_error = null;
 
 if (isset($_SESSION['user_email'])) {
-    header("Location: index.php");
+    header("Location:index.php");
     exit(); // Ensure no further code is executed after the redirection
 }
 
@@ -99,8 +96,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                     }
 
-                    // Redirect to the dashboard or main page (replace 'dashboard.php' with the actual destination)
-                    header("Location: index.php");
+                    header("Location:index.php");
                     exit();
 
                 } else {
@@ -178,7 +174,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
 
                 // Prepare the SQL query to insert data into the 'users' table
                 $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_password,user_type ,user_status )
-                  VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '$hashed_password','user','active')";
+                  VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '$hashed_password','user','inActive')";
 
                 $sqlResult = InsertRoomData::insertData($query);
                 $successfullyRegister = "User registered successfully!";
