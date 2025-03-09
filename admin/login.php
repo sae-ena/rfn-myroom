@@ -56,11 +56,20 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                 if ($row['user_status'] == 'active') {
 
                     if($row['user_type'] == "admin"){
+                        $user_ip = getUserIP();
+                        $sql = "SELECT * FROM ip_address_info WHERE ip_address = '$user_ip' AND status = 'active' LIMIT 1;";
+                        $result = $conn->query($sql);
+                        
+                        // Check if the IP exists and has an active status
+                        if ($result->num_rows > 0) {   
                     $_SESSION['user_name'] = $row['user_name'];
                     $_SESSION['user_email'] = $user_emailByLogin;
                     $_SESSION['user_type'] = "admin";
                     header("Location:/admin/dashboard.php");
                     exit();
+                        }else{
+                            $login_error = "Access Denied."; 
+                        }
                     }
                     else{
                         $login_error = "Unauthorized.";
@@ -131,6 +140,38 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
         }
     }
 }
+function getUserIP()
+{
+    // Get real visitor IP behind CloudFlare network
+    if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
+              $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+              $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+    }
+    $client  = @$_SERVER['HTTP_CLIENT_IP'];
+    $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
+    $remote  = $_SERVER['REMOTE_ADDR'];
+
+    if(filter_var($client, FILTER_VALIDATE_IP))
+    {
+        $ip = $client;
+    }
+    elseif(filter_var($forward, FILTER_VALIDATE_IP))
+    {
+        $ip = $forward;
+    }
+    else
+    {
+        $ip = $remote;
+    }
+
+    return $ip;
+}
+
+
+
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
