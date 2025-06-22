@@ -219,6 +219,115 @@ else {
         font-size: 1.5rem;
         color: #dc3545;
     }
+
+    /* Responsive Design for Booking Details */
+@media (max-width: 1024px) {
+    .booking-details-container {
+        max-width: 98vw;
+        padding: 18px;
+    }
+    .room-image-details {
+        height: 260px;
+    }
+}
+
+@media (max-width: 768px) {
+    .booking-details-container {
+        max-width: 100vw;
+        margin: 18px 0;
+        padding: 10px 2vw;
+        border-radius: 10px;
+    }
+    .room-image-details {
+        height: 180px;
+        border-radius: 8px;
+    }
+    .room-name-details {
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+    }
+    .room-description-details,
+    .room-location-details {
+        font-size: 0.95rem !important;
+        margin-bottom: 12px;
+    }
+    .room-price-details {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+    .booking-status-details {
+        font-size: 1rem;
+        padding: 8px 12px;
+        margin-bottom: 12px;
+    }
+    .cancel-button-details {
+        font-size: 1rem;
+        padding: 10px 10px;
+        width: 100%;
+        margin-top: 12px;
+    }
+    .notice-message, .warning-message {
+        font-size: 0.95rem;
+        padding: 10px;
+        margin-bottom: 12px;
+    }
+    #successModal .modal-content {
+        width: 90vw;
+        padding: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .booking-details-container {
+        max-width: 100vw;
+        margin: 8px 0;
+        padding: 4px 1vw;
+        border-radius: 6px;
+    }
+    .room-image-details {
+        height: 110px;
+        border-radius: 6px;
+    }
+    .room-name-details {
+        font-size: 1.05rem;
+        margin-bottom: 7px;
+    }
+    .room-description-details,
+    .room-location-details {
+        font-size: 0.85rem !important;
+        margin-bottom: 7px;
+    }
+    .room-price-details {
+        font-size: 0.95rem;
+        margin-bottom: 7px;
+    }
+    .booking-status-details {
+        font-size: 0.9rem;
+        padding: 6px 8px;
+        margin-bottom: 7px;
+    }
+    .cancel-button-details {
+        font-size: 0.9rem;
+        padding: 8px 6px;
+        width: 100%;
+        margin-top: 8px;
+    }
+    .notice-message, .warning-message {
+        font-size: 0.85rem;
+        padding: 7px;
+        margin-bottom: 7px;
+    }
+    #successModal .modal-content {
+        width: 98vw;
+        padding: 10px;
+    }
+}
+
+/* Remove hardcoded min-widths and ensure all widths are fluid */
+.booking-details-container, .room-image-details, .room-details-content, .cancel-button-details, .notice-message, .warning-message {
+    min-width: 0 !important;
+    box-sizing: border-box;
+}
 </style>
 
 <div class="booking-details-container">

@@ -84,18 +84,15 @@ if (isset($searchResult) && is_array($searchResult)) {
       if(isset($_SESSION['auth_id']) && $_SESSION['auth_id']){
 
           if(($_SESSION['auth_id'] == $room['user_id'] ) && ($room['status'] === "pending" && $room['is_active'] == true)){
-              echo' <div style="position: absolute; top: 0; right: 0; background-color: rgba(0, 255, 47, 0.97); color: white; padding: 7px; z-index: 1; border-bottom-left-radius: 22px; font-size: 1rem; min-width: 70px; text-align: center;'
-. '@media (max-width: 600px) { font-size: 0.8rem; padding: 4px; min-width: 50px; }' . '">
-              
+              echo' <div class="badge-status badge-booked">
               <strong>   BOOKED</strong>
               </div>';
             }
         }
     if((isset($_SESSION['auth_id']) && $_SESSION['user_type'] == "user" ) && ($room['status'] === "canceled" && $room['is_active'] == true)){
-        echo' <div style="position: absolute; top: 0; right: 0; background-color: rgba(255, 0, 0, 0.8); color: white; padding: 5px; z-index: 1; border-bottom-left-radius: 22px; padding-left: 20px; padding-right: 20px; font-size: 1rem; min-width: 70px; text-align: center;'
-. '@media (max-width: 600px) { font-size: 0.8rem; padding: 4px; min-width: 50px; }' . '">
-<strong>   REJECTED</strong>
-</div>';}
+        echo' <div class="badge-status badge-rejected">
+        <strong>   REJECTED</strong>
+    </div>';}
 
               echo'<div class="room-card-12" style="width:100%; max-width:420px; margin:auto; box-sizing:border-box; min-width:0;">
                   <div class="room-image-container-12" style="width:100%; height:auto; min-width:0;">
@@ -138,7 +135,7 @@ if (isset($searchResult) && is_array($searchResult)) {
 
 <h4 class="roomsTitle" id="roomsTitle">Explore Rooms
     <?php if(! isset($_SESSION['auth_id'])){  
-    echo'<span style="position:relative;left:691px; font-size:16px;padding: 10px 30px;background-color:rgb(219, 57, 57); border-radius:36px 12px">Please log in to book a room.</span>';} ?>
+    echo'<span class="login-warning">Please log in to book a room.</span>';} ?>
 </h4>
 </div>
 <div class="container">
@@ -157,18 +154,14 @@ if (isset($searchResult) && is_array($searchResult)) {
                 <?php 
                
                 if(((isset($_SESSION['auth_id']) ) && ($_SESSION['auth_id']== $room['user_id']) && $_SESSION['user_type'] == "user" ) && ($room['status'] === "pending" && $room['is_active'] == true)){
-                   echo' <div style="position: absolute; top: 0; right: 0; background-color: rgba(0, 255, 47, 0.97); color: white; padding: 7px; z-index: 1; border-bottom-left-radius: 22px; font-size: 1rem; min-width: 70px; text-align: center;'
-. '@media (max-width: 600px) { font-size: 0.8rem; padding: 4px; min-width: 50px; }' . '>
-
+                   echo' <div class="badge-status badge-booked">
                    <strong>   BOOKED</strong>
     </div>';
 
                 }?>
                  <?php 
                 if((isset($_SESSION['auth_id']) && $_SESSION['user_type'] == "user" ) && ($room['status'] === "canceled" && $room['is_active'] == true)){
-                   echo' <div style="position: absolute; top: 0; right: 0; background-color: rgba(255, 0, 0, 0.97); color: white; padding: 5px; z-index: 1; border-bottom-left-radius: 22px; padding-left: 20px; padding-right: 20px; font-size: 1rem; min-width: 70px; text-align: center;'
-. '@media (max-width: 600px) { font-size: 0.8rem; padding: 4px; min-width: 50px; }' . '>
-
+                   echo' <div class="badge-status badge-rejected">
                    <strong>   REJECTED</strong>
     </div>';
 

@@ -17,6 +17,12 @@ require_once('helperFunction/helpers.php');
   <nav class="navbar">
     <div class="container">
       <a href="index.php" class="logo">Casabo Room Finder</a>
+      <!-- Hamburger menu for mobile -->
+      <div class="hamburger" id="hamburger-menu" tabindex="0" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
       <ul class="nav-links">
         <li><a href="/">Home</a></li>
         <li><a href="#roomsTitle">Services</a></li>
@@ -50,7 +56,7 @@ require_once('helperFunction/helpers.php');
     border-radius: 25px;
     transition: background 0.3s ease;
 " 
-    onmouseover="this.style.backgroundColor="#cc0000"
+    onmouseover="this.style.backgroundColor="#cc0000""
     onmouseout="this.style.backgroundColor="#ff4d4d"">
     Logout
 </button>
@@ -68,3 +74,29 @@ require_once('helperFunction/helpers.php');
       </ul>
     </div>
   </nav>
+  <script>
+    // Hamburger menu toggle for mobile
+    document.addEventListener('DOMContentLoaded', function() {
+      var hamburger = document.getElementById('hamburger-menu');
+      var navLinks = document.querySelector('.nav-links');
+      if (hamburger && navLinks) {
+        hamburger.addEventListener('click', function() {
+          navLinks.classList.toggle('active');
+          hamburger.classList.toggle('active'); // For hamburger animation
+          var expanded = hamburger.getAttribute('aria-expanded') === 'true';
+          hamburger.setAttribute('aria-expanded', !expanded);
+        });
+        // Optional: close menu when a link is clicked (for single-page feel)
+        var navLinkEls = document.querySelectorAll('.nav-links a');
+        navLinkEls.forEach(function(link) {
+          link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+              navLinks.classList.remove('active');
+              hamburger.classList.remove('active');
+              hamburger.setAttribute('aria-expanded', 'false');
+            }
+          });
+        });
+      }
+    });
+  </script>
