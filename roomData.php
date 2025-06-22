@@ -133,10 +133,10 @@ if (isset($searchResult) && is_array($searchResult)) {
 }
 ?>
 
-<h4 class="roomsTitle" id="roomsTitle">Explore Rooms
-    <?php if(! isset($_SESSION['auth_id'])){  
-    echo'<span class="login-warning">Please log in to book a room.</span>';} ?>
-</h4>
+<h4 class="roomsTitle" id="roomsTitle">Explore Rooms</h4>
+<?php if(! isset($_SESSION['auth_id'])){  
+  echo'<div class="login-warning">Please log in to book a room.</div>';
+} ?>
 </div>
 <div class="container">
     <div class="gallery-grid">
@@ -190,8 +190,8 @@ if (isset($searchResult) && is_array($searchResult)) {
                             </div>
             
                             <!-- Buttons container: View Room and Book Now -->
-                            <div class="room-book-buttons-containerMain" style="display:flex; flex-wrap:wrap; gap:8px; min-width:0;">
-                                <div class="room-view-button" style="flex:1 1 120px; min-width:90px;">
+                            <div class="room-book-buttons-containerMain">
+                                <div class="room-view-button">
                                     <form action="booking_details.php" method="GET">
                                         <input type="hidden" name="booking_id" value="<?php  echo $room['room_id']; ?>">
                                         <button class="view-btn-12" type="submit">View Room</button>
@@ -199,7 +199,7 @@ if (isset($searchResult) && is_array($searchResult)) {
                                 </div>
             
                                 <?php if (isset($_SESSION['auth_id']) && (! isset($room['is_active']) || $room['is_active'] == false)) : ?>
-                                    <div class="room-book-now-button-12" style="flex:1 1 120px; min-width:90px;">
+                                    <div class="room-book-now-button-12">
                                         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
                                             <input type="hidden" name="room_id" value="<?php echo $room['room_id']; ?>">
                                             <button class="book-now-btn-12" type="submit"> Book Now</button>
