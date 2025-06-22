@@ -90,4 +90,20 @@ function columnExists($table, $column, $conn) {
 }
    
 
+$sqls = [
+    "ALTER TABLE bookings ADD COLUMN payment_method VARCHAR(20)",
+    "ALTER TABLE bookings ADD COLUMN customer_name VARCHAR(100)",
+    "ALTER TABLE bookings ADD COLUMN customer_email VARCHAR(100)",
+    "ALTER TABLE bookings ADD COLUMN customer_number VARCHAR(20)",
+    "ALTER TABLE bookings ADD COLUMN room_price DECIMAL(10,2)",
+    "ALTER TABLE bookings ADD COLUMN payment_status VARCHAR(20) DEFAULT 'pending'",
+    "ALTER TABLE bookings ADD COLUMN payment_txn_id VARCHAR(100)"
+];
+
+foreach ($sqls as $sql) {
+    $conn->query($sql);
+    // Ignore duplicate column errors
+}
+echo "All required columns added to bookings table (if not already present).";
+
 ?>

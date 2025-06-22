@@ -7,16 +7,12 @@ $rooms = [];
 if ($_SERVER["REQUEST_METHOD"] === 'GET' && isset($_GET['room_id'])) {
     $roomId = $_GET['room_id'];
 
-    // Fetch data from the ROOMS table
-    $query = "SELECT   u.user_name,   u.user_email, u.user_number,  r.room_name,  r.room_image,   r.room_description,   r.room_price,   b.booking_date,   b.status, b.description, b.booking_id
-        FROM 
-            bookings b
-        JOIN 
-            users u ON b.user_id = u.user_id
-        JOIN 
-            rooms r ON b.room_id = r.room_id
-        WHERE 
-            r.room_id = ? AND b.status = 'pending' AND b.is_active = 1;";
+    // Fetch data from the ROOMS table, now also fetch payment_status
+    $query = "SELECT u.user_name, u.user_email, u.user_number, r.room_name, r.room_image, r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id, b.payment_status
+        FROM bookings b
+        JOIN users u ON b.user_id = u.user_id
+        JOIN rooms r ON b.room_id = r.room_id
+        WHERE r.room_id = ? AND b.status = 'pending' AND b.is_active = 1;";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $roomId);  // "i" denotes integer type for user_id
     $stmt->execute();
@@ -156,32 +152,35 @@ if (is_array($rooms) && count($rooms) == 0) {
 
                 <?php
                 foreach ($rooms as $user) {
-                    echo '
-                                <div class="user-booking">
-                                    <h3>User ID : ' . $user['booking_id'] . '</h3>
-                                    <p><strong>Username:</strong>' . $user['user_name'] . '</p>
-                                    <p><strong>Email:</strong> ' . $user['user_email'] . '</p>
-                                    <p><strong>Phone Number:</strong> ' . $user['user_number'] . '</p>
-                                    <p><strong>Booking Date:</strong> ' . $user['booking_date'] . '</p>
-                                    ';
-                                    if(isset($user['description']) && !empty($user['description'])){
-                                      
-                                       echo '<p><strong>User Note :</strong> ' . $user['description'] . '</p>';
-                                        
-                                    }
-                                    echo'<div style="display:grid;grid-template-columns:1fr 1fr">
-                                    <form  action="' . $_SERVER['PHP_SELF'] . '" method="POST">
-                                    <input type="hidden" name="booking_cancel_id_admin" value="' . $user["booking_id"] . '">
-                                     <button class="book-bookingRoom" style="background-color:red">Reject Booking</button>
-                                     </form>
-                                    <form  action="' . $_SERVER['PHP_SELF'] . '" method="POST">
-                                    <input type="hidden" name="booking_id" value="' . $user["booking_id"] . '">
-                                     <button class="book-bookingRoom">Approve Booking</button>
-                                     </form>
-                                    
-                                     </div>
-                                     </div>
-                                     ';
+                    $isPaid = false;
+                    if (isset($user['payment_status']) && strtolower($user['payment_status']) === 'paid') {
+                        $isPaid = true;
+                    }
+                    echo '<div class="user-booking" style="border:2px solid '.($isPaid ? '#1da1f2' : '#ccc').'; border-radius:12px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,0.07); background:'.($isPaid ? 'linear-gradient(90deg,#e3f2fd 0%,#fff 100%)' : '#fff').';">';
+                    echo '<h3>User ID : ' . $user['booking_id'] . '</h3>';
+                    echo '<p><strong>Username:</strong> ' . $user['user_name'];
+                    if ($isPaid) {
+                        echo ' <span title="Verified Paid User" style="color:#1da1f2;font-size:1.2em;vertical-align:middle;">&#10004;&#65039;</span>';
+                        echo ' <span style="background:#1da1f2;color:#fff;padding:2px 10px;border-radius:8px;font-size:0.95em;margin-left:8px;vertical-align:middle;">PAID</span>';
+                    }
+                    echo '</p>';
+                    echo '<p><strong>Email:</strong> ' . $user['user_email'] . '</p>';
+                    echo '<p><strong>Phone Number:</strong> ' . $user['user_number'] . '</p>';
+                    echo '<p><strong>Booking Date:</strong> ' . $user['booking_date'] . '</p>';
+                    if(isset($user['description']) && !empty($user['description'])){
+                        echo '<p><strong>User Note :</strong> ' . $user['description'] . '</p>';
+                    }
+                    echo'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+                    echo '<form  action="' . $_SERVER['PHP_SELF'] . '" method="POST">';
+                    echo '<input type="hidden" name="booking_cancel_id_admin" value="' . $user["booking_id"] . '">';
+                    echo '<button class="book-bookingRoom" style="background-color:red">Reject Booking</button>';
+                    echo '</form>';
+                    echo '<form  action="' . $_SERVER['PHP_SELF'] . '" method="POST">';
+                    echo '<input type="hidden" name="booking_id" value="' . $user["booking_id"] . '">';
+                    echo '<button class="book-bookingRoom">Approve Booking</button>';
+                    echo '</form>';
+                    echo '</div>';
+                    echo '</div>';
                 }
 
             }

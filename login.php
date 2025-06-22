@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     // Check if email and password are not empty
     if (!empty($user_emailByLogin) && !empty($user_passwordByLogin)) {
         // Query to check if the user email exists in the database
-        $query = "SELECT user_id, user_password, user_type, user_status, user_name FROM users WHERE user_email = '$user_emailByLogin' LIMIT 1";
+        $query = "SELECT user_id, user_password, user_type, user_status, user_name, user_number FROM users WHERE user_email = '$user_emailByLogin' LIMIT 1";
         $result = $conn->query($query);
 
         // Check if the query returned a result (i.e., the email exists)
@@ -38,7 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 if ($row['user_type'] == 'user') {
                     if ($row['user_status'] == 'active') {
                         // Successful login, start session and redirect
-                        $_SESSION['user_name'] = explode(' ', trim($row['user_name']))[0];
+                        $_SESSION['user_name'] = $row['user_name']; // Store full name
+                        $_SESSION['user_number'] = $row['user_number']; // Store phone number
                         $_SESSION['user_email'] = $user_emailByLogin;
                         $_SESSION['user_type'] = "user";
                         $_SESSION['auth_id'] = $row['user_id'];

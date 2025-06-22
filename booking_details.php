@@ -376,8 +376,18 @@ else {
         <?php if (isset($_SESSION['auth_id']) && ($row['is_active'] == false || !isset($row['status']))) { ?>
             <form action="roomData.php" method="POST">
                 <strong>Remarks :</strong><textarea name="remarks" placeholder="Enter your remarks here..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; font-size: 1rem; resize: vertical;"></textarea>
+                <input type="hidden" name="room_id" value="<?= $row['room_id'] ?>">
+                <input type="hidden" name="room_price" value="<?= $row['room_price'] ?>">
+                <input type="hidden" name="payment_customer_name" value="<?= $_SESSION['auth_name'] ?? '' ?>">
+                <input type="hidden" name="payment_customer_email" value="<?= $_SESSION['auth_email'] ?? '' ?>">
+                <input type="hidden" name="payment_customer_number" value="<?= $_SESSION['auth_number'] ?? '' ?>">
+                <div style="margin-bottom: 15px;">
+                    <strong>Payment Method:</strong><br>
+                    <label><input type="radio" name="payment_method" value="cash" checked> Cash on Hand</label><br>
+                    <label><input type="radio" name="payment_method" value="khalti"> Khalti</label><br>
+                    <label><input type="radio" name="payment_method" value="esewa"> eSewa</label>
+                </div>
                 <button type="submit" name="bookNow" class="cancel-button-details" style="background-color:rgb(0, 255, 42);">Book Now</button>
-                <input type="hidden" name="room_id" value="<?= $row['room_id'] ?>"> 
             </form>
         <?php } ?>
     </div>

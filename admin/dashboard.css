@@ -150,6 +150,46 @@ body {
     border-bottom: 1px solid #444;
 }
 
+/* Payment & Booking History Table */
+.room-table th, .room-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: left;
+    font-size: 15px;
+}
+.room-table th {
+    background: #2c2c2e;
+    color: #fff;
+    font-weight: 600;
+}
+.room-table tr:nth-child(even) {
+    background: #f7f7fa;
+}
+.room-table tr:nth-child(odd) {
+    background: #fff;
+}
+.room-table td {
+    color: #222;
+}
+.room-table td[style*='color:green'] {
+    font-weight: bold;
+}
+.room-table td[style*='#c82333'] {
+    font-weight: bold;
+}
+@media (max-width: 900px) {
+    .room-table th, .room-table td {
+        font-size: 13px;
+        padding: 6px 4px;
+    }
+}
+@media (max-width: 600px) {
+    .room-table th, .room-table td {
+        font-size: 11px;
+        padding: 4px 2px;
+    }
+}
+
 /* Chart Section */
 .dashboard-chart {
     margin-top: 40px;

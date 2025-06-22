@@ -43,6 +43,7 @@ echo'<body>
                 <li><a href="/admin/booking.php" class="nav-link" data-target="bookings">Bookings</a></li>
                 <li><a href="/admin/userTable.php" class="nav-link" data-target="users">Users</a></li>
                 <li><a href="/admin/approve.php" class="nav-link" data-target="settings">Approve List</a></li>
+                <li><a href="paymentHistory.php" class="nav-link" data-target="paymentHistory">Payment & Booking History</a></li>
                 <li><a href="/admin/dbConnect.php" class="nav-link" id="logoutBtn" >Logout</a></li>
             </ul>
         </nav>
