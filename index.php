@@ -6,49 +6,75 @@ require('header.php') ;
 require_once('helperFunction/helpers.php');
 
 if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
-    $searchLocation = $_GET['searchLocation'];
-    $searchType = $_GET['searchRoomType'] ?? "";
+    $searchLocation = trim($_GET['searchLocation'] ?? "");
+    $searchType = trim($_GET['searchRoomType'] ?? "");
     
-    $searchResult = getRoomData($searchType, $searchLocation);
-    if(! $searchResult){
-       // Try searching with just location if both parameters were provided
-       if (!empty($searchLocation) && !empty($searchType)) {
-           $searchResult = getRoomData("", $searchLocation);
-           if ($searchResult) {
-               $form_error = "No rooms found with type '$searchType' in '$searchLocation'. Showing all rooms in '$searchLocation' instead.";
-           } else {
-               $form_error = "No rooms found in '$searchLocation'. Please try a different location or room type.";
-           }
-       } else {
-           $form_error = "No Room Found. Please try different search criteria.";
-       }
+    // Validate search parameters
+    if (empty($searchLocation) && empty($searchType)) {
+        $errorMessage = "Please enter a location or select a room type to search.";
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode($errorMessage));
+        exit();
+    } else {
+        $searchResult = getRoomData($searchType, $searchLocation);
+        
+        if(!$searchResult){
+            // Enhanced error messages based on search criteria
+            if (!empty($searchLocation) && !empty($searchType)) {
+                // Try searching with just location if both parameters were provided
+                $searchResult = getRoomData("", $searchLocation);
+                if ($searchResult) {
+                    $errorMessage = "No {$searchType} rooms found in {$searchLocation}. Showing all available rooms in {$searchLocation} instead.";
+                } else {
+                    $errorMessage = "No rooms found in '{$searchLocation}'. Please try a different location or room type.";
+                }
+            } elseif (!empty($searchLocation)) {
+                $errorMessage = "No rooms found in '{$searchLocation}'. Please try a different location or check back later.";
+            } elseif (!empty($searchType)) {
+                $errorMessage = "No {$searchType} rooms available at the moment. Please try a different room type or location.";
+            } else {
+                $errorMessage = "No rooms found. Please try different search criteria.";
+            }
+            
+            // Redirect with error message in URL
+            $redirectUrl = $_SERVER['PHP_SELF'] . "?error=" . urlencode($errorMessage);
+            if (!empty($searchLocation)) {
+                $redirectUrl .= "&searchLocation=" . urlencode($searchLocation);
+            }
+            if (!empty($searchType)) {
+                $redirectUrl .= "&searchRoomType=" . urlencode($searchType);
+            }
+            header("Location: " . $redirectUrl);
+            exit();
+        }
     }
-   
 }
+
+// Get error message from URL parameter
+$errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
 
 ?>
 <!-- Hero Section Start -->
 <section class="hero">
     <div class="hero-content">
         <h1>Find Your Perfect Place in Nepal</h1>
-        <p>Discover the best room rentals, apartments, and accommodation in Kathmandu, Lalitpur, Pokhara, and across Nepal. From budget rooms to luxury apartments.</p>
-        <div class="search-form-container">
-            <form method="get" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>" class="search-form">
-                <input type="text" name="searchLocation" placeholder="Enter Location (e.g., Kathmandu, Lalitpur, Pokhara, Chitwan)" class="location-input" />
+         <div class="search-form-container">
+            <form method="get" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>" class="search-form" id="searchForm">
+                <input type="text" name="searchLocation" placeholder="Enter Location (e.g., Kathmandu, Lalitpur, Pokhara, Chitwan)" class="location-input" value="<?php echo isset($_GET['searchLocation']) ? htmlspecialchars($_GET['searchLocation']) : ''; ?>" />
                 <select class="room-type-input" name="searchRoomType">
                     <option value="" selected disabled>Room Type</option>
-                    <option value="singleRoom">Single Room</option>
-                    <option value="1BHK">1BHK Apartment</option>
-                    <option value="2BHK">2BHK Apartment</option>
-                    <option value="apartment">Apartment</option>
-                    <option value="Double">Double Room</option>
-                    <option value="Budget">Budget Room</option>
+                    <option value="singleRoom" <?php echo (isset($_GET['searchRoomType']) && $_GET['searchRoomType'] == 'singleRoom') ? 'selected' : ''; ?>>Single Room</option>
+                    <option value="1BHK" <?php echo (isset($_GET['searchRoomType']) && $_GET['searchRoomType'] == '1BHK') ? 'selected' : ''; ?>>1BHK Apartment</option>
+                    <option value="2BHK" <?php echo (isset($_GET['searchRoomType']) && $_GET['searchRoomType'] == '2BHK') ? 'selected' : ''; ?>>2BHK Apartment</option>
+                    <option value="apartment" <?php echo (isset($_GET['searchRoomType']) && $_GET['searchRoomType'] == 'apartment') ? 'selected' : ''; ?>>Apartment</option>
+                    <option value="Double" <?php echo (isset($_GET['searchRoomType']) && $_GET['searchRoomType'] == 'Double') ? 'selected' : ''; ?>>Double Room</option>
+                    <option value="Budget" <?php echo (isset($_GET['searchRoomType']) && $_GET['searchRoomType'] == 'Budget') ? 'selected' : ''; ?>>Budget Room</option>
                 </select>
-                <button type="submit" class="search-btn" name="serachRoom">Search Rooms</button>
+                <button type="submit" class="search-btn" name="serachRoom" id="searchBtn">
+                    <span class="search-btn-text">Search Rooms</span>
+                    <span class="search-btn-loading" style="display: none;">Searching...</span>
+                </button>
             </form>
-            <div style="margin-top: 15px; font-size: 0.9rem; color: #666; text-align: center;">
-                <p style="font-size: 0.8rem; margin-top: 10px;"><em>Tip: You can search by location only, room type only, or both together</em></p>
-            </div>
+            
         </div>
     </div>
 </section>
@@ -74,11 +100,6 @@ if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
                 <p>Tourist destination with scenic views and comfortable accommodation</p>
                 <a href="?searchLocation=Pokhara&serachRoom=Search" class="location-link">Find Rooms in Pokhara</a>
             </div>
-            <div class="location-card">
-                <h3>Chitwan</h3>
-                <p>Wildlife destination with affordable room rental options</p>
-                <a href="?searchLocation=Chitwan&serachRoom=Search" class="location-link">Find Rooms in Chitwan</a>
-            </div>
         </div>
     </div>
 </section>
@@ -93,7 +114,7 @@ if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
         <div class="aboutSectionLeft">
             <h2>About Casabo Room Finder - Nepal's Premier Room Rental Platform</h2>
             <p>
-                Welcome to Casabo Room Finder, Nepal's leading platform for finding the perfect accommodation. Founded by passionate BCA students in Kathmandu, we connect travelers, students, and professionals with the best room rentals, apartments, and accommodation options across Nepal. Whether you're looking for a budget room in Kathmandu, a luxury apartment in Lalitpur, student accommodation in Pokhara, or a furnished apartment in Chitwan, we've got you covered.
+                Nepal's leading platform for finding the perfect accommodation.We connect travelers, students, and professionals with the best room rentals, apartments, and accommodation options across Nepal. Whether you're looking for a budget room in Kathmandu, a luxury apartment in Lalitpur or student accommodation in Pokhara we've got you covered.
             </p>
             <p>
                 Our platform specializes in single room rentals, 1BHK and 2BHK apartments, budget accommodations, and luxury properties. We work with verified property dealers and landlords to ensure you get authentic listings with transparent pricing. From affordable room sharing options to premium furnished apartments, find your ideal home with ease through our user-friendly search interface.
@@ -217,4 +238,209 @@ if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
 
 <?php require('roomData.php'); ?>
 
+<?php if (isset($errorMessage)): ?>
+<div id="error-alert" style="
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ff4444;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10000;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    max-width: 400px;
+    border-left: 4px solid #cc0000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+">
+    <span style="font-size: 20px;">⚠️</span>
+    <div>
+        <div style="font-weight: bold; margin-bottom: 5px;">Search Result</div>
+        <div><?php echo htmlspecialchars($errorMessage); ?></div>
+    </div>
+    <button onclick="document.getElementById('error-alert').style.display='none'" style="
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        margin-left: 10px;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    ">×</button>
+</div>
+
+<script>
+// Auto-hide after 10 seconds
+setTimeout(function() {
+    var alert = document.getElementById('error-alert');
+    if (alert) {
+        alert.style.display = 'none';
+    }
+}, 10000);
+</script>
+<?php endif; ?>
+
 <?php require('footer.php') ; ?>
+
+<script>
+// Enhanced Search Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('searchForm');
+    const searchBtn = document.getElementById('searchBtn');
+    const locationInput = document.querySelector('input[name="searchLocation"]');
+    const roomTypeSelect = document.querySelector('select[name="searchRoomType"]');
+    
+    // Form validation and enhanced UX
+    searchForm.addEventListener('submit', function(e) {
+        const location = locationInput.value.trim();
+        const roomType = roomTypeSelect.value;
+        
+        // Validate form
+        if (!location && !roomType) {
+            e.preventDefault();
+            notificationManager.show(
+                'Please enter a location or select a room type to search.',
+                'warning',
+                'Search Required',
+                5000
+            );
+            return false;
+        }
+        
+        // Show loading state
+        searchBtn.classList.add('loading');
+        searchBtn.disabled = true;
+        
+        // Add a small delay to show loading state
+        setTimeout(() => {
+            searchForm.submit();
+        }, 500);
+    });
+    
+    // Real-time validation feedback
+    function validateSearchInputs() {
+        const location = locationInput.value.trim();
+        const roomType = roomTypeSelect.value;
+        
+        if (location || roomType) {
+            searchBtn.style.opacity = '1';
+            searchBtn.disabled = false;
+        } else {
+            searchBtn.style.opacity = '0.6';
+            searchBtn.disabled = true;
+        }
+    }
+    
+    // Add event listeners for real-time validation
+    locationInput.addEventListener('input', validateSearchInputs);
+    roomTypeSelect.addEventListener('change', validateSearchInputs);
+    
+    // Initialize validation
+    validateSearchInputs();
+    
+    // Enhanced search suggestions
+    const popularLocations = ['Kathmandu', 'Lalitpur', 'Pokhara', 'Chitwan', 'Bhaktapur', 'Dharan'];
+    
+    locationInput.addEventListener('focus', function() {
+        if (!this.value) {
+            this.placeholder = 'Start typing location...';
+        }
+    });
+    
+    locationInput.addEventListener('blur', function() {
+        if (!this.value) {
+            this.placeholder = 'Enter Location (e.g., Kathmandu, Lalitpur, Pokhara, Chitwan)';
+        }
+    });
+    
+    // Auto-complete functionality
+    locationInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        if (value.length > 1) {
+            const suggestions = popularLocations.filter(location => 
+                location.toLowerCase().includes(value)
+            );
+            
+            // You can implement a dropdown here if needed
+            if (suggestions.length > 0 && !suggestions.includes(this.value)) {
+                // Show suggestion hint
+                this.title = `Suggestions: ${suggestions.join(', ')}`;
+            }
+        }
+    });
+    
+    // Keyboard navigation
+    searchForm.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchForm.dispatchEvent(new Event('submit'));
+        }
+    });
+    
+    // Mobile optimization
+    if (window.innerWidth <= 768) {
+        // Auto-focus location input on mobile for better UX
+        locationInput.focus();
+        
+        // Prevent zoom on input focus (iOS)
+        locationInput.style.fontSize = '16px';
+        roomTypeSelect.style.fontSize = '16px';
+    }
+    
+    // Smooth scroll to search results if they exist
+    if (window.location.search.includes('serachRoom')) {
+        setTimeout(() => {
+            const searchResults = document.getElementById('roomsTitleSearch');
+            if (searchResults) {
+                searchResults.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }
+        }, 500);
+    }
+    
+    // Enhanced error handling for search
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('serachRoom')) {
+        // Check if there are any error messages
+        const errorElements = document.querySelectorAll('.danger-notify, .warning-notify');
+        if (errorElements.length > 0) {
+            // Scroll to top to show error message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+});
+
+// Enhanced notification for room not found scenarios
+function showRoomNotFoundMessage(location, roomType = null) {
+    if (roomType) {
+        notificationManager.showRoomNotFound(location, roomType);
+    } else {
+        notificationManager.showRoomNotFound(location);
+    }
+}
+
+// Search form enhancement for better mobile experience
+function enhanceMobileSearch() {
+    if (window.innerWidth <= 768) {
+        const searchForm = document.querySelector('.search-form');
+        if (searchForm) {
+            searchForm.style.margin = '0 10px';
+        }
+    }
+}
+
+// Call on load and resize
+window.addEventListener('load', enhanceMobileSearch);
+window.addEventListener('resize', enhanceMobileSearch);
+</script>

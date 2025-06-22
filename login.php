@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Sign Up & Login</title>
+    <title>Modern Sign Up & Login - Room Finder Nepal</title>
     <link rel="stylesheet" href="admin/login.css">
     <?php require('helperFunction/SweetAlert.php'); ?>
 </head>
@@ -95,6 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             <span><?php echo $successfullyRegister; ?></span>
         </div>
     <?php endif; ?>
+    
     <div class="auth-wrapper" style="background-image: url('admin/uploads/67ae0a34aac00_backgroundLogin.png')">
         <div class="auth-container">
             <!-- Toggle Button -->
@@ -104,129 +105,160 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
             <!-- Glassmorphism Forms -->
             <div id="login-form" class="form-card glass visible">
-                <h1>Login</h1>
+                <h1>Welcome Back</h1>
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.875rem;">
+                    Sign in to your account to continue
+                </p>
 
                 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
-                    <label for="login-email">Email:</label>
-                    <input type="text" name="userEmailByLogin" value="<?php echo isset($user_emailByLogin) ? htmlspecialchars($user_emailByLogin) : ""; ?>" placeholder="Enter your email" required>
-                    <label for="login-password">Password:</label>
-                    <input type="password" name="userPasswordByLogin" value="<?php echo isset($user_passwordByLogin) ? htmlspecialchars($user_passwordByLogin) : ""; ?>" placeholder="Enter your password" required>
-                    <button type="submit" class="submit-button" name="login">Login</button>
+                    <div class="form-group">
+                        <label for="login-email">Email Address</label>
+                        <input type="email" id="login-email" name="userEmailByLogin" value="<?php echo isset($user_emailByLogin) ? htmlspecialchars($user_emailByLogin) : ""; ?>" placeholder="Enter your email address" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <div class="password-container">
+                            <input type="password" id="login-password" name="userPasswordByLogin" value="<?php echo isset($user_passwordByLogin) ? htmlspecialchars($user_passwordByLogin) : ""; ?>" placeholder="Enter your password" required>
+                            <button type="button" class="eye-button" onclick="togglePasswordVisibility('login-password', this)">&#128065;</button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-button" name="login">
+                        <span>Sign In</span>
+                    </button>
                 </form>
             </div>
 
-            <div id="signup-form" class="form-card glass ">
-                <h1>Sign Up</h1>
+            <div id="signup-form" class="form-card glass">
+                <h1>Create Account</h1>
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.875rem;">
+                    Join us and find your perfect room
+                </p>
+                
                 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" class="register-form" id="register-form">
-                    <label for="user_name">Full Name<span class="required">*</span></label>
-                    <input type="text" id="user_name" name="user_name" value="<?php echo isset($user_name) ? htmlspecialchars($user_name) : ""; ?>" required placeholder="Enter your name">
-                    <label for="user_email">Email<span class="required">*</span></label>
-                    <input type="email" id="user_email" name="user_email" value="<?php echo isset($user_email) ? htmlspecialchars($user_email) : ""; ?>" required placeholder="Enter your email">
-                    <label for="user_number">Phone Number<span class="required">*</span></label>
-                    <input type="number" id="user_number" name="user_number" value="<?php echo isset($user_number) ? htmlspecialchars($user_number) : ""; ?>" required placeholder="Enter your phone number">
-                    <label for="user_location">Location</label>
-                    <input type="text" id="user_location" name="user_location" value="<?php echo isset($user_location) ? htmlspecialchars($user_location) : ""; ?>" placeholder="Enter your location (optional)">
-                    <label for="user_password">Password<span class="required">*</span></label>
-                    <div class="password-container">
-                        <input type="password" id="user_password" name="user_password" required placeholder="Enter a password">
-                        <button type="button" id="toggle-password" class="eye-button">&#128065;</button>
+                    <div class="form-group">
+                        <label for="user_name">Full Name<span class="required">*</span></label>
+                        <input type="text" id="user_name" name="user_name" value="<?php echo isset($user_name) ? htmlspecialchars($user_name) : ""; ?>" required placeholder="Enter your full name">
                     </div>
-                    <label for="confirmPassword">Confirm Password<span class="required">*</span></label>
-                    <div class="password-container">
-                        <input id="confirmPassword" type="password" name="user_confirmation_password" placeholder="Confirm Password">
-                        <button type="button" id="toggle-confirm-password" class="eye-button">&#128065;</button>
+                    
+                    <div class="form-group">
+                        <label for="user_email">Email Address<span class="required">*</span></label>
+                        <input type="email" id="user_email" name="user_email" value="<?php echo isset($user_email) ? htmlspecialchars($user_email) : ""; ?>" required placeholder="Enter your email address">
                     </div>
-                    <input type="text" name="register" hidden id="" value="newRegistration">
-                    <p style="color: white; background-color: rgba(244, 67, 54, 0.6); font-size: 12px; border-radius: 25px; padding: 10px 15px; margin: 0px 0px; display: none;" id="password-message">
-                        *Password: Min 8 chars, 1 uppercase, 1 number, 1 symbol.
-                    </p>
-                    <button type="submit" name="register" class="submit-button">Register</button>
+                    
+                    <div class="form-group">
+                        <label for="user_number">Phone Number<span class="required">*</span></label>
+                        <input type="tel" id="user_number" name="user_number" value="<?php echo isset($user_number) ? htmlspecialchars($user_number) : ""; ?>" required placeholder="Enter your phone number (9xxxxxxxxx)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="user_location">Location</label>
+                        <input type="text" id="user_location" name="user_location" value="<?php echo isset($user_location) ? htmlspecialchars($user_location) : ""; ?>" placeholder="Enter your location (optional)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="user_password">Password<span class="required">*</span></label>
+                        <div class="password-container">
+                            <input type="password" id="user_password" name="user_password" required placeholder="Create a strong password">
+                            <button type="button" id="toggle-password" class="eye-button">&#128065;</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password<span class="required">*</span></label>
+                        <div class="password-container">
+                            <input id="confirmPassword" type="password" name="user_confirmation_password" placeholder="Confirm your password">
+                            <button type="button" id="toggle-confirm-password" class="eye-button">&#128065;</button>
+                        </div>
+                    </div>
+                    
+                    <input type="text" name="register" hidden value="newRegistration">
+                    
+                    <div id="password-message">
+                        <strong>Password Requirements:</strong><br>
+                        • Minimum 8 characters<br>
+                        • At least 1 uppercase letter<br>
+                        • At least 1 number<br>
+                        • At least 1 special character
+                    </div>
+                    
+                    <button type="submit" name="register" class="submit-button">
+                        <span>Create Account</span>
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Custom validation Alert || Client SIDE -->
+    <!-- Enhanced Alert Box for Validation Messages -->
     <div id="alert-box" class="alert-box">
-        <span id="alert-message"></span>
+        <div class="alert-message" id="alert-message"></div>
     </div>
 
     <script src="admin/login.js"></script>
     <script>
-        // Password toggle functionality for both fields
-        document.getElementById('toggle-password').addEventListener('click', function() {
-            const passwordField = document.getElementById('user_password');
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-            } else {
-                passwordField.type = 'password';
-            }
-        });
-
-        document.getElementById('toggle-confirm-password').addEventListener('click', function() {
-            const confirmPasswordField = document.getElementById('confirmPassword');
-            if (confirmPasswordField.type === 'password') {
-                confirmPasswordField.type = 'text';
-            } else {
-                confirmPasswordField.type = 'password';
-            }
-        });
-
-        // Form validation before submitting
-        document.getElementById('register-form').addEventListener('submit', function(event) {
-            event.preventDefault();  // Prevent form submission to check validation first
-
-            const fullName = document.getElementById('user_name').value;
-            const email = document.getElementById('user_email').value;
-            const phoneNumber = document.getElementById('user_number').value;
-            const password = document.getElementById('user_password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            let valid = true;
-
-            // Validate Full Name
-            if (!/^[A-Za-z\s]+$/.test(fullName)) {
-                showAlert("Full name must only contain letters and spaces.");
-                valid = false;
-            }
-
-            // Validate Email
-            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            if (!emailPattern.test(email)) {
-                showAlert("Please enter a valid email address.");
-                valid = false;
-            }
-
-            // Validate Phone Number
-            if (!/^[98|97]\d{9}$/.test(phoneNumber)) {
-                showAlert("Phone number must be 10 digits and start with 98,97.");
-                valid = false;
-            }
-
-            // Validate Password
-            const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
-            if (!passwordPattern.test(password)) {
-                showAlert("Password must be at least 8 characters long, contain one uppercase letter, one number, and one symbol.");
-                valid = false;
-            }
-
-            // Confirm Password match
-            if (password !== confirmPassword) {
-                showAlert("Passwords do not match.");
-                valid = false;
-            }
-
-            if (valid) {
-                // Proceed with form submission if everything is valid
-                document.getElementById('register-form').submit();
-            }
-        });
-
-        // Display alert message
-        function showAlert(message) {
-            document.getElementById('alert-message').innerText = message;
-            document.getElementById('alert-box').style.display = 'block';
+        // Additional utility function for login form password toggle
+        function togglePasswordVisibility(fieldId, button) {
+            const field = document.getElementById(fieldId);
+            const isPassword = field.type === 'password';
+            field.type = isPassword ? 'text' : 'password';
+            button.innerHTML = isPassword ? '&#128065;&#8205;&#127787;' : '&#128065;';
+            
+            // Add visual feedback
+            button.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 150);
         }
+
+        // Enhanced form validation with better UX
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loading states to submit buttons
+            const submitButtons = document.querySelectorAll('.submit-button');
+            submitButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (!this.classList.contains('loading')) {
+                        this.classList.add('loading');
+                        const originalText = this.querySelector('span').textContent;
+                        this.querySelector('span').textContent = 'Processing...';
+                        
+                        // Reset after 3 seconds if form doesn't submit
+                        setTimeout(() => {
+                            if (this.classList.contains('loading')) {
+                                this.classList.remove('loading');
+                                this.querySelector('span').textContent = originalText;
+                            }
+                        }, 3000);
+                    }
+                });
+            });
+
+            // Add smooth scrolling for better mobile experience
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    if (window.innerWidth <= 480) {
+                        setTimeout(() => {
+                            this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+                    }
+                });
+            });
+
+            // Add keyboard navigation support
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                    const form = e.target.closest('form');
+                    if (form) {
+                        const submitButton = form.querySelector('button[type="submit"]');
+                        if (submitButton && !submitButton.classList.contains('loading')) {
+                            submitButton.click();
+                        }
+                    }
+                }
+            });
+        });
     </script>
 </body>
 

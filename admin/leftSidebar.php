@@ -44,6 +44,9 @@ echo'<body>
                 <li><a href="/admin/userTable.php" class="nav-link" data-target="users">Users</a></li>
                 <li><a href="/admin/approve.php" class="nav-link" data-target="settings">Approve List</a></li>
                 <li><a href="paymentHistory.php" class="nav-link" data-target="paymentHistory">Payment & Booking History</a></li>
+                <li><a href="/admin/media.php" class="nav-link" data-target="media">Media  Manager</a></li>
+                <li><a href="/admin/formManagerTable.php" class="nav-link" data-target="media">Form  Manager</a></li>
+            
                 <li><a href="/admin/dbConnect.php" class="nav-link" id="logoutBtn" >Logout</a></li>
             </ul>
         </nav>
