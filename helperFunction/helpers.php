@@ -14,20 +14,17 @@ function convertToNullIfEmpty($input) {
     return $input;
 }
 
-function getRoomData($roomType,$location=""){
-    
-    if($location=="" && $roomType == "") return false;
+function getRoomData($roomType, $location = "") {
+    if ($location == "" && $roomType == "") return false;
     require("admin/dbConnect.php");
-    
-    // Ensure the location is provided and not empty
+
     if (!empty($location) && !empty($roomType)) {
         $query = "SELECT r.room_id, r.room_name, r.room_location, r.room_price, r.room_type, r.room_status, r.room_description, r.room_image, r.created_at , b.booking_id,b.user_id,b.is_active,b.status,b.booking_date FROM rooms r
                   LEFT JOIN bookings b ON r.room_id = b.room_id
                   WHERE (r.room_location LIKE '%$location%' AND r.room_type = '$roomType')
                   AND r.room_status = 'active'
                   AND (b.status != 'confirmed' OR b.booking_id IS NULL) ORDER BY r.created_at DESC;";
-    }
-    if (!empty($location)) {
+    } elseif (!empty($location)) {
         $query = "SELECT  r.room_id, r.room_name, r.room_location, r.room_price, r.room_type, r.room_status, r.room_description, r.room_image, r.created_at , b.booking_id,b.user_id,b.is_active,b.status,b.booking_date FROM rooms r
         LEFT JOIN bookings b ON r.room_id = b.room_id
         WHERE r.room_location LIKE '%$location%'
@@ -39,16 +36,7 @@ function getRoomData($roomType,$location=""){
               WHERE r.room_type = '$roomType'
               AND r.room_status = 'active'
               AND (b.status != 'confirmed' OR b.booking_id IS NULL)  ORDER BY r.created_at DESC;";
-        // $query = "SELECT r.* FROM rooms r
-        //       LEFT JOIN bookings b ON r.room_id = b.room_id
-        //       WHERE r.room_type = '$roomType'
-        //       AND r.room_status = 'active'
-        //       AND (b.status != 'confirmed' OR b.booking_id IS NULL)
-        //       GROUP BY r.room_id
-        //       ORDER BY r.created_at DESC
-        //       LIMIT 15;";
     }
-    
     
     $result = mysqli_query($conn,$query);
     if(mysqli_num_rows($result)> 0){
