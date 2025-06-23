@@ -323,7 +323,7 @@ class AuthFormManager {
                 setTimeout(() => {
                     notification.remove();
                 }, 300);
-            }, 5000);
+            }, 10000);
         });
     }
 

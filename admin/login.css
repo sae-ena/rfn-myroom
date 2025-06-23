@@ -87,6 +87,8 @@ body {
     padding: 2rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
     margin: 1rem;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 /* Responsive adjustments */
@@ -96,6 +98,8 @@ body {
         margin: 0.5rem;
         border-radius: var(--radius-xl);
         max-width: calc(100vw - 1rem);
+        max-height: 95vh;
+        overflow-y: auto;
     }
     
     .auth-wrapper {
