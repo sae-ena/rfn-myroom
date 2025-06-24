@@ -22,6 +22,7 @@ $popupType = '';
 
 // Handle Add/Edit Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $slug = mysqli_real_escape_string($conn, $_POST['slug']);
     $subject_title = mysqli_real_escape_string($conn, $_POST['subject_title']);
     $user_message = mysqli_real_escape_string($conn, $_POST['user_message']);
     $admin_mail = mysqli_real_escape_string($conn, $_POST['admin_mail']);
@@ -30,33 +31,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $template_variables = mysqli_real_escape_string($conn, $_POST['template_variables']);
     $now = date('Y-m-d H:i:s');
 
+    // Check for unique slug
+    $slugCheckSql = "SELECT id FROM email_templates WHERE slug = '$slug'";
     if (isset($_POST['template_id']) && $_POST['template_id'] !== '') {
-        // Edit
         $template_id = intval($_POST['template_id']);
-        $sql = "UPDATE email_templates SET subject_title=?, user_message=?, admin_mail=?, admin_message=?, status=?, template_variables=?, updated_at=? WHERE id=?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssissi", $subject_title, $user_message, $admin_mail, $admin_message, $status, $template_variables, $now, $template_id);
-        if ($stmt->execute()) {
-            $popupMessage = "Email template updated successfully.";
-            $popupType = "success";
-        } else {
-            $popupMessage = "Failed to update email template.";
-            $popupType = "error";
-        }
-        $stmt->close();
+        $slugCheckSql .= " AND id != $template_id";
+    }
+    $slugCheckResult = $conn->query($slugCheckSql);
+    if ($slugCheckResult && $slugCheckResult->num_rows > 0) {
+        $popupMessage = "Slug must be unique. This slug is already used.";
+        $popupType = "error";
     } else {
-        // Add
-        $sql = "INSERT INTO email_templates (subject_title, user_message, admin_mail, admin_message, status, template_variables, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssisss", $subject_title, $user_message, $admin_mail, $admin_message, $status, $template_variables, $now, $now);
-        if ($stmt->execute()) {
-            $popupMessage = "Email template added successfully.";
-            $popupType = "success";
+        if (isset($_POST['template_id']) && $_POST['template_id'] !== '') {
+            // Edit
+            $template_id = intval($_POST['template_id']);
+            $sql = "UPDATE email_templates SET subject_title=?, slug=?, user_message=?, admin_mail=?, admin_message=?, status=?, template_variables=?, updated_at=? WHERE id=?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ssssisssi", $subject_title, $slug, $user_message, $admin_mail, $admin_message, $status, $template_variables, $now, $template_id);
+            if ($stmt->execute()) {
+                $popupMessage = "Email template updated successfully.";
+                $popupType = "success";
+            } else {
+                $popupMessage = "Failed to update email template.";
+                $popupType = "error";
+            }
+            $stmt->close();
         } else {
-            $popupMessage = "Failed to add email template.";
-            $popupType = "error";
+            // Add
+            $sql = "INSERT INTO email_templates (subject_title, slug, user_message, admin_mail, admin_message, status, template_variables, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ssssissss", $subject_title, $slug, $user_message, $admin_mail, $admin_message, $status, $template_variables, $now, $now);
+            if ($stmt->execute()) {
+                $popupMessage = "Email template added successfully.";
+                $popupType = "success";
+            } else {
+                $popupMessage = "Failed to add email template.";
+                $popupType = "error";
+            }
+            $stmt->close();
         }
-        $stmt->close();
     }
 }
 
@@ -99,20 +112,27 @@ if ($action === 'edit' && $id) {
 }
 ?>
 <div class="dashboard-content">
-    <div class="form-container" style="margin-left: 260px; padding: 5px;">
-        <h1>Email Template Manager</h1>
-        <button onclick="showAddModal()" class="upload-btn">Add New Template</button>
-        <table border="1" cellpadding="6" style="width:100%;max-width:900px;margin-top:20px;">
-            <thead><tr><th>ID</th><th>Subject</th><th>Status</th><th>Actions</th></tr></thead>
+    <div class="form-container" style="margin-left: 260px; padding: 5px; max-width: 1100px;">
+        <h1 class="roomH1" style="color:white">Email Template Manager</h1>
+        <button onclick="showAddModal()" class="edit-button" style="margin-bottom: 15px;">Add New Template</button>
+        <table class="room-table" style="width:100%;margin-top:20px;">
+            <thead><tr><th>ID</th><th>Subject</th><th>Slug</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
             <?php foreach ($templates as $template): ?>
                 <tr>
                     <td><?= $template['id'] ?></td>
                     <td><?= htmlspecialchars($template['subject_title']) ?></td>
-                    <td><?= $template['status'] ? 'Active' : 'Inactive' ?></td>
+                    <td><?= htmlspecialchars($template['slug']) ?></td>
                     <td>
-                        <button onclick="showEditModal(<?= $template['id'] ?>)" class="upload-btn">Edit</button>
-                        <button onclick="confirmDelete(<?= $template['id'] ?>)" class="upload-btn" style="background:#d32f2f;">Delete</button>
+                        <?php if ($template['status']): ?>
+                            <span class="edit-button" style="background:#2ac000; color:white; padding:4px 12px; border-radius:5px; font-size:14px;">Active</span>
+                        <?php else: ?>
+                            <span class="delete-button" style="padding:4px 12px; border-radius:5px; font-size:14px;">Inactive</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <button onclick="showEditModal(<?= $template['id'] ?>)" class="edit-button">Edit</button>
+                        <button onclick="confirmDelete(<?= $template['id'] ?>)" class="delete-button">Delete</button>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -138,39 +158,40 @@ if ($action === 'edit' && $id) {
 </div>
 <!-- Add/Edit Modal -->
 <div id="templateModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 500px;">
         <span class="close" onclick="closeTemplateModal()">&times;</span>
         <h2 id="modalTitle">Add Email Template</h2>
         <form id="templateForm" method="POST" action="emailTemplate.php">
             <input type="hidden" name="template_id" id="template_id">
-            <label>Subject Title:<br><input type="text" name="subject_title" id="subject_title" required></label><br><br>
-            <label>User Message:<br><textarea name="user_message" id="user_message" rows="6"></textarea></label><br><br>
-            <label>Admin Mail:<br><input type="email" name="admin_mail" id="admin_mail"></label><br><br>
-            <label>Admin Message:<br><textarea name="admin_message" id="admin_message" rows="6"></textarea></label><br><br>
+            <label>Subject Title:<br><input type="text" name="subject_title" id="subject_title" required class="input-field"></label><br><br>
+            <label>User Message:<br><textarea name="user_message" id="user_message" rows="6" class="input-field"></textarea></label><br><br>
+            <label>Admin Mail:<br><input type="email" name="admin_mail" id="admin_mail" class="input-field"></label><br><br>
+            <label>Admin Message:<br><textarea name="admin_message" id="admin_message" rows="6" class="input-field"></textarea></label><br><br>
             <label>Status:<br>
-                <select name="status" id="status">
+                <select name="status" id="status" class="input-field">
                     <option value="1">Active</option>
                     <option value="0">Inactive</option>
                 </select>
             </label><br><br>
-            <label>Template Variables (comma separated):<br><input type="text" name="template_variables" id="template_variables" placeholder="e.g. name,email,otp"></label><br><br>
-            <button type="submit" class="upload-btn">Save Template</button>
+            <label>Template Variables (comma separated):<br><input type="text" name="template_variables" id="template_variables" placeholder="e.g. name,email,otp" class="input-field"></label><br><br>
+            <label>Slug:<br><input type="text" name="slug" id="slug" required class="input-field"></label><br><br>
+            <button type="submit" class="edit-button">Save Template</button>
         </form>
     </div>
 </div>
 <!-- Delete Confirmation Modal -->
 <div id="deleteModal" class="modal">
-    <div class="modal-content" style="background:#ffebee;">
+    <div class="modal-content" style="background:#ffebee; max-width: 400px;">
         <span class="close" onclick="closeDeleteModal()">&times;</span>
         <h2 style="color:#b71c1c;">Delete Confirmation</h2>
         <p>Are you sure you want to delete this email template?</p>
-        <button id="deleteConfirmBtn" class="upload-btn" style="background:#d32f2f;">Delete</button>
-        <button onclick="closeDeleteModal()" class="upload-btn">Cancel</button>
+        <button id="deleteConfirmBtn" class="delete-button">Delete</button>
+        <button onclick="closeDeleteModal()" class="edit-button" style="background:#ccc; color:#222;">Cancel</button>
     </div>
 </div>
 <!-- Popup Message Modal -->
 <div id="popupModal" class="modal" style="display:<?= $popupMessage ? 'block' : 'none' ?>;">
-    <div class="modal-content" style="background:<?= $popupType === 'success' ? '#e8f5e9' : '#ffebee' ?>;">
+    <div class="modal-content" style="background:<?= $popupType === 'success' ? '#e8f5e9' : '#ffebee' ?>; max-width: 400px;">
         <span class="close" onclick="closePopupModal()">&times;</span>
         <h3 style="color:<?= $popupType === 'success' ? '#2e7d32' : '#b71c1c' ?>;">
             <?= $popupType === 'success' ? 'Success' : 'Error' ?>
@@ -190,6 +211,7 @@ function showAddModal() {
     document.getElementById('admin_message').value = '';
     document.getElementById('status').value = '1';
     document.getElementById('template_variables').value = '';
+    document.getElementById('slug').value = '';
     document.getElementById('templateModal').style.display = 'block';
 }
 function showEditModal(id) {
@@ -205,6 +227,7 @@ function showEditModal(id) {
         document.getElementById('admin_message').value = template.admin_message;
         document.getElementById('status').value = template.status;
         document.getElementById('template_variables').value = template.template_variables;
+        document.getElementById('slug').value = template.slug;
         document.getElementById('templateModal').style.display = 'block';
     }
 }
@@ -269,7 +292,7 @@ window.onclick = function(event) {
     text-decoration: none;
     cursor: pointer;
 }
-.upload-btn {
+.edit-button {
     background-color: #4CAF50;
     color: white;
     padding: 8px 18px;
@@ -279,8 +302,21 @@ window.onclick = function(event) {
     text-align: center;
     border-radius: 5px;
 }
-.upload-btn:hover {
+.edit-button:hover {
     background-color: #45a049;
+}
+.delete-button {
+    background-color: #d32f2f;
+    color: white;
+    padding: 8px 18px;
+    margin: 5px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 5px;
+}
+.delete-button:hover {
+    background-color: #c62828;
 }
 .pagination {
     display: inline-block;

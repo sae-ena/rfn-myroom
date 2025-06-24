@@ -178,10 +178,10 @@ function get_flash($key) {
 
 <body>
     <?php $flash_error = get_flash('error'); if ($flash_error): ?>
-        <div class="danger-notify"><span><?php echo $flash_error; ?></span></div>
+        <div class="danger-notify" id="flash-danger"><span><?php echo $flash_error; ?></span></div>
     <?php endif; ?>
     <?php $flash_success = get_flash('success'); if ($flash_success): ?>
-        <div class="success-notify"><span><?php echo $flash_success; ?></span></div>
+        <div class="success-notify" id="flash-success"><span><?php echo $flash_success; ?></span></div>
     <?php endif; ?>
     
     <div class="auth-wrapper" style="background-image: url('admin/uploads/67ae0a34aac00_backgroundLogin.png')">
@@ -344,6 +344,19 @@ function get_flash($key) {
                             submitButton.click();
                         }
                     }
+                }
+            });
+
+            // Ensure flash popups are visible for 5 seconds
+            const danger = document.getElementById('flash-danger');
+            const success = document.getElementById('flash-success');
+            [danger, success].forEach(function(el) {
+                if (el) {
+                    el.style.display = 'block';
+                    setTimeout(function() {
+                        el.style.opacity = '0';
+                        setTimeout(function() { el.remove(); }, 1000);
+                    }, 5000);
                 }
             });
         });

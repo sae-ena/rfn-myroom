@@ -107,10 +107,10 @@ function get_flash($key) {
             <b>Resends left:</b> <?php echo max(0, $max_resend - $otpRow['resend_count']); ?>
         </div>
         <?php $flash_error = get_flash('error'); if ($flash_error): ?>
-            <div class="danger-notify"><span><?php echo $flash_error; ?></span></div>
+            <div class="danger-notify" id="flash-danger"><span><?php echo $flash_error; ?></span></div>
         <?php endif; ?>
         <?php $flash_success = get_flash('success'); if ($flash_success): ?>
-            <div class="success-notify"><span><?php echo $flash_success; ?></span></div>
+            <div class="success-notify" id="flash-success"><span><?php echo $flash_success; ?></span></div>
         <?php endif; ?>
         <form method="POST" style="margin-bottom:1.2rem;">
             <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_id); ?>">
@@ -123,5 +123,21 @@ function get_flash($key) {
         <div class="otp-info">Didn't receive the code? Check your spam or try resending.</div>
     </div>
 </div>
+<script>
+    // Ensure flash popups are visible for 5 seconds
+    window.addEventListener('DOMContentLoaded', function() {
+        const danger = document.getElementById('flash-danger');
+        const success = document.getElementById('flash-success');
+        [danger, success].forEach(function(el) {
+            if (el) {
+                el.style.display = 'block';
+                setTimeout(function() {
+                    el.style.opacity = '0';
+                    setTimeout(function() { el.remove(); }, 1000);
+                }, 5000);
+            }
+        });
+    });
+</script>
 </body>
 </html> 

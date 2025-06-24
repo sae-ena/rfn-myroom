@@ -46,9 +46,10 @@ echo'<body>
                 <li><a href="paymentHistory.php" class="nav-link" data-target="paymentHistory">Payment & Booking History</a></li>
                 <li><a href="/admin/media.php" class="nav-link" data-target="media">Media  Manager</a></li>
                 <li><a href="/admin/formManagerTable.php" class="nav-link" data-target="media">Form  Manager</a></li>
-                <li style="margin-top:20px;"><b>Main Settings</b></li>
-                <li><a href="/admin/emailTemplate.php" class="nav-link" data-target="email-template">Email Template</a></li>
-            
+                <li style="margin-top:20px;"><button id="mainSettingsToggle" style="background:none;border:none;color:inherit;font-weight:bold;font-size:inherit;cursor:pointer;padding:0;">Main Settings &#9660;</button></li>
+                <ul id="mainSettingsSubmenu" style="display:none;list-style:none;padding-left:20px;margin:0;">
+                    <li><a href="/admin/emailTemplate.php" class="nav-link" data-target="email-template">Email Template</a></li>
+                </ul>
                 <li><a href="/admin/dbConnect.php" class="nav-link" id="logoutBtn" >Logout</a></li>
             </ul>
         </nav>
@@ -76,4 +77,16 @@ btn.onclick = function(event) {
             }
         };
 
+// Toggle Main Settings
+const mainSettingsToggle = document.getElementById('mainSettingsToggle');
+const mainSettingsSubmenu = document.getElementById('mainSettingsSubmenu');
+mainSettingsToggle.addEventListener('click', function() {
+    if (mainSettingsSubmenu.style.display === 'none') {
+        mainSettingsSubmenu.style.display = 'block';
+        mainSettingsToggle.innerHTML = 'Main Settings &#9650;';
+    } else {
+        mainSettingsSubmenu.style.display = 'none';
+        mainSettingsToggle.innerHTML = 'Main Settings &#9660;';
+    }
+});
 </script>

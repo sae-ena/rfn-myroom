@@ -203,10 +203,10 @@ require('../helperFunction/SweetAlert.php'); ?>
 
 <body>
     <?php $flash_error = get_flash('error'); if ($flash_error): ?>
-        <div class="danger-notify"><span><?php echo $flash_error; ?></span></div>
+        <div class="danger-notify" id="flash-danger"><span><?php echo $flash_error; ?></span></div>
     <?php endif; ?>
     <?php $flash_success = get_flash('success'); if ($flash_success): ?>
-        <div class="success-notify"><span><?php echo $flash_success; ?></span></div>
+        <div class="success-notify" id="flash-success"><span><?php echo $flash_success; ?></span></div>
     <?php endif; ?>
     <?php
             if ($formManagerResult->num_rows > 0) {
@@ -398,6 +398,20 @@ else{
             }
             gotoSignup();
         <?php endif; ?>
+        // Ensure flash popups are visible for 5 seconds
+        window.addEventListener('DOMContentLoaded', function() {
+            const danger = document.getElementById('flash-danger');
+            const success = document.getElementById('flash-success');
+            [danger, success].forEach(function(el) {
+                if (el) {
+                    el.style.display = 'block';
+                    setTimeout(function() {
+                        el.style.opacity = '0';
+                        setTimeout(function() { el.remove(); }, 1000);
+                    }, 5000);
+                }
+            });
+        });
     </script>
 </body>
 
