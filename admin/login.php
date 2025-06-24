@@ -22,8 +22,17 @@ $FormSmt->bind_param("si", $formSlug ,$formManagerStatus);
 $FormSmt->execute();
 $formManagerResult = $FormSmt->get_result();
 
-
-
+function set_flash($key, $message) {
+    $_SESSION['flash'][$key] = $message;
+}
+function get_flash($key) {
+    if (isset($_SESSION['flash'][$key])) {
+        $msg = $_SESSION['flash'][$key];
+        unset($_SESSION['flash'][$key]);
+        return $msg;
+    }
+    return null;
+}
 
 // Check if the login form is submitted
 if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
@@ -57,8 +66,14 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
 
                     if($row['user_type'] == "admin"){
                         $user_ip = getUserIP();
-                        $sql = "SELECT * FROM ip_address_info WHERE ip_address = '$user_ip' AND status = 'active' LIMIT 1;";
-                        $result = $conn->query($sql);
+                        $ip_parts = explode('.', $user_ip);
+                        if (count($ip_parts) === 4) {
+                            $ip_prefix = $ip_parts[0] . '.' . $ip_parts[1] . '.' . $ip_parts[2] . '.';
+                            $sql = "SELECT * FROM ip_address_info WHERE ip_address LIKE '{$ip_prefix}%' AND status = 'active' LIMIT 1;";
+                            $result = $conn->query($sql);
+                        } else {
+                            $login_error = "Invalid IP address format.";
+                        }
                         
                         // Check if the IP exists and has an active status
                         if ($result->num_rows > 0) {   
@@ -91,6 +106,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
         // Email or password is empty
         $login_error = "Please fill in both email and password.";
     }
+    set_flash('error', $login_error);
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     $user_name = $user_email = $user_number = $user_location = $user_status = $user_password = "";
     // Get form data
@@ -132,7 +148,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && isset($_POST['login'])) {
                   VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '$user_status', '$hashed_password','admin')";
 
                 $sqlResult = InsertRoomData::insertData($query);
-                $successfullyRegister = "User registered successfully!";
+                set_flash('success', "User registered successfully!");
 
 
 
@@ -186,20 +202,11 @@ require('../helperFunction/SweetAlert.php'); ?>
 </head>
 
 <body>
-    <?php if (isset($email_error)): ?>
-        <div class="danger-notify">
-            <span><?php echo $email_error; ?></span>
-        </div>
+    <?php $flash_error = get_flash('error'); if ($flash_error): ?>
+        <div class="danger-notify"><span><?php echo $flash_error; ?></span></div>
     <?php endif; ?>
-    <?php if (isset($login_error)): ?>
-        <div class="danger-notify">
-            <span><?php echo $login_error; ?></span>
-        </div>
-    <?php endif; ?>
-    <?php if (isset($successfullyRegister)): ?>
-        <div class="success-notify">
-            <span><?php echo $successfullyRegister; ?></span>
-        </div>
+    <?php $flash_success = get_flash('success'); if ($flash_success): ?>
+        <div class="success-notify"><span><?php echo $flash_success; ?></span></div>
     <?php endif; ?>
     <?php
             if ($formManagerResult->num_rows > 0) {
@@ -374,11 +381,11 @@ else{
 
     <script src="login.js"></script>
     <script>
-        // If PHP successfully registered the user, we delay redirection by 3 seconds
-        <?php if(isset($successfullyRegister)): ?>
+        // If PHP successfully registered the user, we delay redirection by 5 seconds
+        <?php if(isset($flash_success)): ?>
             setTimeout(function () {
                 window.location.href = 'login.php';
-            }, 1000);
+            }, 5000);
         <?php endif; ?>
         <?php if (isset($form_error) && is_string($form_error)): ?>
 

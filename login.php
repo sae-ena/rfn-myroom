@@ -150,6 +150,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
+// At the top, after session_start();
+function set_flash($key, $message) {
+    $_SESSION['flash'][$key] = $message;
+}
+function get_flash($key) {
+    if (isset($_SESSION['flash'][$key])) {
+        $msg = $_SESSION['flash'][$key];
+        unset($_SESSION['flash'][$key]);
+        return $msg;
+    }
+    return null;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -164,15 +177,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 </head>
 
 <body>
-    <?php if (isset($login_error)): ?>
-        <div class="danger-notify">
-            <span><?php echo $login_error; ?></span>
-        </div>
+    <?php $flash_error = get_flash('error'); if ($flash_error): ?>
+        <div class="danger-notify"><span><?php echo $flash_error; ?></span></div>
     <?php endif; ?>
-    <?php if (isset($_SESSION['otp_success'])): ?>
-        <div class="success-notify">
-            <span><?php echo $_SESSION['otp_success']; unset($_SESSION['otp_success']); ?></span>
-        </div>
+    <?php $flash_success = get_flash('success'); if ($flash_success): ?>
+        <div class="success-notify"><span><?php echo $flash_success; ?></span></div>
     <?php endif; ?>
     
     <div class="auth-wrapper" style="background-image: url('admin/uploads/67ae0a34aac00_backgroundLogin.png')">

@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_otp'])) {
         // Activate user
         $conn->query("UPDATE users SET user_status='active' WHERE user_id='$user_id'");
         // Success message and redirect
-        $_SESSION['otp_success'] = 'Your account has been verified! You can now log in.';
+        set_flash('success', 'Your account has been verified! You can now log in.');
         header('Location: login.php');
         exit();
     } else {
@@ -64,6 +64,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp'])) {
         $res = $conn->query("SELECT * FROM otp_verifications WHERE id='{$otpRow['id']}'");
         $otpRow = $res ? $res->fetch_assoc() : $otpRow;
     }
+}
+
+function set_flash($key, $message) {
+    $_SESSION['flash'][$key] = $message;
+}
+function get_flash($key) {
+    if (isset($_SESSION['flash'][$key])) {
+        $msg = $_SESSION['flash'][$key];
+        unset($_SESSION['flash'][$key]);
+        return $msg;
+    }
+    return null;
 }
 
 ?><!DOCTYPE html>
@@ -94,8 +106,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp'])) {
             <b>Attempts left:</b> <?php echo max(0, $max_tries - $otpRow['tries']); ?>,
             <b>Resends left:</b> <?php echo max(0, $max_resend - $otpRow['resend_count']); ?>
         </div>
-        <?php if ($error): ?><div class="otp-error"><?php echo $error; ?></div><?php endif; ?>
-        <?php if ($success): ?><div class="otp-success"><?php echo $success; ?></div><?php endif; ?>
+        <?php $flash_error = get_flash('error'); if ($flash_error): ?>
+            <div class="danger-notify"><span><?php echo $flash_error; ?></span></div>
+        <?php endif; ?>
+        <?php $flash_success = get_flash('success'); if ($flash_success): ?>
+            <div class="success-notify"><span><?php echo $flash_success; ?></span></div>
+        <?php endif; ?>
         <form method="POST" style="margin-bottom:1.2rem;">
             <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_id); ?>">
             <input class="otp-input" type="text" name="otp_code" maxlength="6" pattern="\d{6}" required placeholder="------" autocomplete="one-time-code">
