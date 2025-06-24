@@ -16,6 +16,85 @@ if (isset($_SESSION['user_email'])) {
     exit(); // Ensure no further code is executed after the redirection
 }
 
+// Registration logic (re-added)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
+    $user_name = $user_email = $user_number = $user_location = $user_password = "";
+    // Get form data
+    $user_name = $_POST['user_name'];
+    $user_email = $_POST['user_email'];
+    $user_number = $_POST['user_number'];
+    $user_location = $_POST['user_location'];
+    $user_password = $_POST['user_password'];
+    $user_confirmation_password = $_POST['user_confirmation_password'];
+
+    // Validate input
+    if (empty($user_name) || empty($user_email) || empty($user_password) || empty($user_confirmation_password) || empty($user_number)) {
+        $form_error = "Please fill all required fields.";
+    } elseif ($user_password !== $user_confirmation_password) {
+        $form_error = "Passwords do not match.";
+    } else {
+        // Check for unique email
+        $uniqueCheck = "SELECT user_email FROM users WHERE user_email = '$user_email' ";
+        $result = $conn->query($uniqueCheck);
+        if ($result->num_rows > 0) {
+            $form_error = "Email already exists";
+        } else {
+            // Check for unique phone number
+            $uniqueCheck = "SELECT user_number FROM users WHERE user_number = '$user_number' ";
+            $result = $conn->query($uniqueCheck);
+            if ($result->num_rows > 0) {
+                $form_error = "PhoneNumber already exists";
+            } elseif (!str_contains($user_email, '@')) {
+                $form_error = "Invalid Email Format";
+            } elseif (strlen($user_number) != 10 || !str_starts_with($user_number, '98')) {
+                $form_error = "Invalid PhoneNumber.";
+            } elseif (strlen($user_password) < 8) {
+                $form_error = "Password must be at least 8 characters long.";
+            } elseif (!preg_match('/[A-Z]/', $user_password)) {
+                $form_error = "Password must contain at least one uppercase letter.";
+            } elseif (!preg_match('/[0-9]/', $user_password)) {
+                $form_error = "Password must contain at least one number.";
+            } elseif (!preg_match('/[^a-zA-Z0-9]/', $user_password)) {
+                $form_error = "Password must contain at least one special character.";
+            } else {
+                // Hash the password
+                $hashed_password = password_hash($user_password, PASSWORD_DEFAULT);
+                // Prepare the SQL query to insert data into the 'users' table
+                $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_status, user_password, user_type) VALUES ('$user_name', '$user_email', '$user_number', '$user_location', 'inActive', '$hashed_password', 'user')";
+                $sqlResult = InsertRoomData::insertData($query);
+                if ($sqlResult) {
+                    // Get the inserted user_id
+                    $user_id = $conn->insert_id;
+                    if (!$user_id) {
+                        // fallback: fetch by email
+                        $res = $conn->query("SELECT user_id FROM users WHERE user_email = '$user_email' LIMIT 1");
+                        $row = $res ? $res->fetch_assoc() : null;
+                        $user_id = $row ? $row['user_id'] : null;
+                    }
+                    // Generate OTP
+                    $otp_code = rand(100000, 999999);
+                    $expires_at = date('Y-m-d H:i:s', strtotime('+2 minutes'));
+                    // Insert OTP into otp_verifications
+                    $conn->query("INSERT INTO otp_verifications (user_id, otp_code, expires_at, tries, resend_count, is_verified, created_at) VALUES ('$user_id', '$otp_code', '$expires_at', 0, 0, 0, NOW())");
+                    // Send OTP email (now using PHPMailer)
+                    require_once('helperFunction/mail.php');
+                    $expires_minutes = 2;
+                    list($subject, $message) = getOtpEmailForUser($conn, $user_name, $otp_code, $expires_minutes);
+                    if (!sendMailPHPMailer($user_email, $subject, $message)) {
+                        // Optionally log error or set $form_error
+                        // $form_error = "Failed to send OTP email. Please check your email address.";
+                    }
+                    // Redirect to OTP verification page
+                    header("Location: verify_otp.php?user_id=$user_id");
+                    exit();
+                } else {
+                    $form_error = "Registration failed. Please try again later.";
+                }
+            }
+        }
+    }
+}
+
 // Check if the login form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     // Get the input data from the form
@@ -90,9 +169,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             <span><?php echo $login_error; ?></span>
         </div>
     <?php endif; ?>
-    <?php if (isset($successfullyRegister)): ?>
+    <?php if (isset($_SESSION['otp_success'])): ?>
         <div class="success-notify">
-            <span><?php echo $successfullyRegister; ?></span>
+            <span><?php echo $_SESSION['otp_success']; unset($_SESSION['otp_success']); ?></span>
         </div>
     <?php endif; ?>
     

@@ -164,6 +164,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 }
 
+// Email Template CMS Section
+if (isset($_GET['section']) && $_GET['section'] === 'email_templates') {
+    require('dbConnect.php');
+    // Handle CRUD actions here (scaffold only)
+    ?>
+    <h2>Email Template Management</h2>
+    <form id="email-template-form" method="POST" action="">
+        <label>Subject Title:<br><input type="text" name="subject_title" required value="OTP Verification Code"></label><br><br>
+        <label>User Message:<br><textarea id="user_message" name="user_message" rows="6">Hello {{name}},<br><br>Your OTP code is <b>{{otp}}</b>. It will expire in {{expires}} minutes.<br><br>If you did not request this, please ignore this email.</textarea></label><br><br>
+        <label>Admin Mail:<br><input type="email" name="admin_mail" value=""></label><br><br>
+        <label>Admin Message:<br><textarea id="admin_message" name="admin_message" rows="6"></textarea></label><br><br>
+        <label>Status:<br>
+            <select name="status">
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
+            </select>
+        </label><br><br>
+        <label>Template Variables (comma separated):<br><input type="text" name="template_variables" value="name,otp,expires" placeholder="e.g. name,email,otp"></label><br><br>
+        <div style="color:#888;font-size:0.95em;margin-bottom:1em;">Note: Use <b>{{name}}</b>, <b>{{otp}}</b>, and <b>{{expires}}</b> in your message. These will be replaced with actual values when sending the email.</div>
+        <button type="submit">Save Template</button>
+    </form>
+    <hr>
+    <h3>Existing Email Templates</h3>
+    <table border="1" cellpadding="6" style="width:100%;max-width:900px;">
+        <thead><tr><th>ID</th><th>Subject</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+        <!-- List templates here (scaffold) -->
+        </tbody>
+    </table>
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+      tinymce.init({ selector:'#user_message', menubar:false, plugins:'code', toolbar:'undo redo | bold italic underline | code', height:200 });
+      tinymce.init({ selector:'#admin_message', menubar:false, plugins:'code', toolbar:'undo redo | bold italic underline | code', height:200 });
+    </script>
+    <?php
+    exit;
+}
 
 ?>
 <?php if (isset($validationError)): ?>
@@ -479,8 +516,8 @@ document.getElementById("successMessage").textContent = "Image has been uploaded
     position: relative; /* Positioning to center it */
     top: 60px;
     left: 50%; /* Move to the middle horizontally */
-    transform: translate(-50%, -50%); /* Offset by half of the element’s width and height to truly center it */
-    box-sizing: border-box; /* Ensures the padding doesn’t affect the overall width */
+    transform: translate(-50%, -50%); /* Offset by half of the element's width and height to truly center it */
+    box-sizing: border-box; /* Ensures the padding doesn't affect the overall width */
 }
 .close {
     background-color: rgba(255, 255, 255, 0.8); 

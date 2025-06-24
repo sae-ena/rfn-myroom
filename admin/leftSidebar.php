@@ -46,6 +46,8 @@ echo'<body>
                 <li><a href="paymentHistory.php" class="nav-link" data-target="paymentHistory">Payment & Booking History</a></li>
                 <li><a href="/admin/media.php" class="nav-link" data-target="media">Media  Manager</a></li>
                 <li><a href="/admin/formManagerTable.php" class="nav-link" data-target="media">Form  Manager</a></li>
+                <li style="margin-top:20px;"><b>Main Settings</b></li>
+                <li><a href="/admin/emailTemplate.php" class="nav-link" data-target="email-template">Email Template</a></li>
             
                 <li><a href="/admin/dbConnect.php" class="nav-link" id="logoutBtn" >Logout</a></li>
             </ul>

@@ -19,3 +19,17 @@ CREATE TABLE media (
     is_active BOOLEAN DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS email_templates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    subject_title VARCHAR(255) NOT NULL,
+    user_message TEXT NOT NULL,
+    admin_mail VARCHAR(255) DEFAULT NULL,
+    admin_message TEXT DEFAULT NULL,
+    status TINYINT(1) DEFAULT 1,
+    template_variables TEXT DEFAULT NULL, -- JSON or comma-separated list of variable names
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- You can add more fields as needed for your CMS

@@ -322,7 +322,7 @@ class AuthFormManager {
                 notification.style.transform = 'translateX(-50%) translateY(-100%)';
                 setTimeout(() => {
                     notification.remove();
-                }, 300);
+                }, 3000);
             }, 5000);
         });
     }
