@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev
 # Enable Apache mod_rewrite for URL rewriting
 RUN a2enmod rewrite
 
-# Copy your PHP files into the Apache server's document root
-COPY . /var/www/html/
+# Copy composer files first for better Docker cache
+COPY composer.json composer.lock /var/www/html/
 
 # Install Composer globally
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
@@ -20,6 +20,9 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
 
 # Install PHP dependencies with Composer
 RUN cd /var/www/html && composer install --no-interaction --no-dev --optimize-autoloader
+
+# Now copy the rest of your app
+COPY . /var/www/html/
 
 # Set the working directory to /var/www/html (document root of Apache)
 WORKDIR /var/www/html/
