@@ -45,9 +45,9 @@ echo'<body>
                 <li><a href="/admin/approve.php" class="nav-link" data-target="settings">Approve List</a></li>
                 <li><a href="paymentHistory.php" class="nav-link" data-target="paymentHistory">Payment & Booking History</a></li>
                 <li><a href="/admin/media.php" class="nav-link" data-target="media">Media  Manager</a></li>
-                <li><a href="/admin/formManagerTable.php" class="nav-link" data-target="media">Form  Manager</a></li>
                 <li><button id="mainSettingsToggle">Main Settings &#9660;</button></li>
                 <ul id="mainSettingsSubmenu" style="display:none;list-style:none;padding-left:20px;margin:0;">
+                <li><a href="/admin/formManagerTable.php" class="nav-link" data-target="media">Form  Manager</a></li>
                     <li><a href="/admin/emailTemplate.php" class="nav-link" data-target="email-template">Email Template</a></li>
                     <li><a href="/admin/backendSetting.php" class="nav-link" data-target="backend-setting">Backend Setting</a></li>
                 </ul>
