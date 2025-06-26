@@ -1,26 +1,22 @@
 <?php
-  if (!isset($_SESSION)) {
+if (!isset($_SESSION)) {
     session_start();
-  }
-require('header.php') ; 
+}
 require_once('helperFunction/helpers.php');
+require('admin/dbConnect.php'); // Needed for getRoomData
 
-if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
+if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])) {
     $searchLocation = trim($_GET['searchLocation'] ?? "");
     $searchType = trim($_GET['searchRoomType'] ?? "");
-    
-    // Validate search parameters
     if (empty($searchLocation) && empty($searchType)) {
         $errorMessage = "Please enter a location or select a room type to search.";
-        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode($errorMessage));
+        $redirectUrl = $_SERVER['PHP_SELF'];
+        header("Location: $redirectUrl?error=" . urlencode($errorMessage));
         exit();
     } else {
         $searchResult = getRoomData($searchType, $searchLocation);
-        
-        if(!$searchResult){
-            // Enhanced error messages based on search criteria
+        if (!$searchResult) {
             if (!empty($searchLocation) && !empty($searchType)) {
-                // Try searching with just location if both parameters were provided
                 $searchResult = getRoomData("", $searchLocation);
                 if ($searchResult) {
                     $errorMessage = "No {$searchType} rooms found in {$searchLocation}. Showing all available rooms in {$searchLocation} instead.";
@@ -34,20 +30,21 @@ if($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])){
             } else {
                 $errorMessage = "No rooms found. Please try different search criteria.";
             }
-            
-            // Redirect with error message in URL
-            $redirectUrl = $_SERVER['PHP_SELF'] . "?error=" . urlencode($errorMessage);
+            $redirectUrl = $_SERVER['PHP_SELF'];
+            $params = [];
             if (!empty($searchLocation)) {
-                $redirectUrl .= "&searchLocation=" . urlencode($searchLocation);
+                $params[] = "searchLocation=" . urlencode($searchLocation);
             }
             if (!empty($searchType)) {
-                $redirectUrl .= "&searchRoomType=" . urlencode($searchType);
+                $params[] = "searchRoomType=" . urlencode($searchType);
             }
-            header("Location: " . $redirectUrl);
+            $paramString = $params ? ('&' . implode('&', $params)) : '';
+            header("Location: $redirectUrl?error=" . urlencode($errorMessage) . $paramString);
             exit();
         }
     }
 }
+require('header.php');
 
 // Get error message from URL parameter
 $errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
@@ -112,10 +109,11 @@ $errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
             <!-- Background image is set in CSS -->
         </div>
         <div class="aboutSectionLeft">
-            <h2>About Casabo Room Finder - Nepal's Premier Room Rental Platform</h2>
+            <h2>About Casabo Room Finder</h2>
             <p>
                 Nepal's leading platform for finding the perfect accommodation.We connect travelers, students, and professionals with the best room rentals, apartments, and accommodation options across Nepal. Whether you're looking for a budget room in Kathmandu, a luxury apartment in Lalitpur or student accommodation in Pokhara we've got you covered.
             </p>
+            <br>
             <p>
                 Our platform specializes in single room rentals, 1BHK and 2BHK apartments, budget accommodations, and luxury properties. We work with verified property dealers and landlords to ensure you get authentic listings with transparent pricing. From affordable room sharing options to premium furnished apartments, find your ideal home with ease through our user-friendly search interface.
             </p>
@@ -239,57 +237,46 @@ $errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
 <?php require('roomData.php'); ?>
 
 <?php if (isset($errorMessage)): ?>
-<div id="error-alert" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #ff4444;
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    z-index: 10000;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    max-width: 400px;
-    border-left: 4px solid #cc0000;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-">
-    <span style="font-size: 20px;">⚠️</span>
-    <div>
-        <div style="font-weight: bold; margin-bottom: 5px;">Search Result</div>
-        <div><?php echo htmlspecialchars($errorMessage); ?></div>
-    </div>
-    <button onclick="document.getElementById('error-alert').style.display='none'" style="
-        background: none;
-        border: none;
-        color: white;
-        font-size: 24px;
-        cursor: pointer;
-        margin-left: 10px;
-        padding: 0;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    ">×</button>
-</div>
-
 <script>
-// Auto-hide after 10 seconds
-setTimeout(function() {
-    var alert = document.getElementById('error-alert');
-    if (alert) {
-        alert.style.display = 'none';
-    }
-}, 10000);
+    document.addEventListener('DOMContentLoaded', function() {
+        notificationManager.show(
+            <?php echo json_encode($errorMessage); ?>,
+            'danger',
+            'Search Result',
+            6000
+        );
+    });
 </script>
 <?php endif; ?>
 
-<?php require('footer.php') ; ?>
+<!-- Single Popup Notification Container for search errors -->
+<div id="popup-notify" class="danger-notify" style="display:none;position:fixed;top:1.5rem;right:1.5rem;z-index:99999;"><span id="popup-message"></span></div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get error from URL
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    if (error) {
+        var popup = document.getElementById('popup-notify');
+        var popupMsg = document.getElementById('popup-message');
+        popupMsg.textContent = decodeURIComponent(error.replace(/\+/g, ' '));
+        popup.className = 'danger-notify';
+        popup.style.display = 'block';
+        popup.style.opacity = '1';
+        setTimeout(function() {
+            popup.style.opacity = '0';
+            setTimeout(function() { popup.style.display = 'none'; }, 1000);
+        }, 6000);
+        // Remove error from URL without reloading
+        if (window.history.replaceState) {
+            const url = new URL(window.location);
+            url.searchParams.delete('error');
+            window.history.replaceState({}, document.title, url);
+        }
+    }
+});
+</script>
+<?php require('footer.php'); ?>
 
 <script>
 // Enhanced Search Functionality

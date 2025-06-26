@@ -9,6 +9,7 @@ require('helperFunction/InsertRoomData.php');
 $user_emailByLogin = "";
 $user_passwordByLogin = "";
 $form_error = null;
+$show_signup = false;
 
 // If the user is already logged in, redirect to index page
 if (isset($_SESSION['user_email'])) {
@@ -75,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     $otp_code = rand(100000, 999999);
                     $expires_at = date('Y-m-d H:i:s', strtotime('+2 minutes'));
                     // Insert OTP into otp_verifications
-                    $conn->query("INSERT INTO otp_verifications (user_id, otp_code, expires_at, tries, resend_count, is_verified, created_at) VALUES ('$user_id', '$otp_code', '$expires_at', 0, 0, 0, NOW())");
+                    $conn->query("INSERT INTO otp_verifications (user_id, otp, expires_at, max_tries, `status`, created_at) VALUES ('$user_id', '$otp_code', '$expires_at', 0, 'pending', NOW())");
                     // Send OTP email (now using PHPMailer)
                     require_once('helperFunction/mail.php');
                     $expires_minutes = 2;
@@ -92,6 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 }
             }
         }
+    }
+    if ($form_error) {
+        $show_signup = true;
     }
 }
 
@@ -173,10 +177,42 @@ function get_flash($key) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Sign Up & Login - Room Finder Nepal</title>
     <link rel="stylesheet" href="admin/login.css">
+    <style>
+        /* Move popups to top right and make responsive */
+        .danger-notify, .success-notify {
+            position: fixed !important;
+            top: 1.5rem !important;
+            right: 1.5rem !important;
+            left: auto !important;
+            max-width: 350px;
+            width: calc(100vw - 3rem);
+            text-align: left;
+            z-index: 2000;
+            animation: fadeInRight 0.3s ease;
+            transition: opacity 0.5s;
+            transform: none !important;
+        }
+        @keyframes fadeInRight {
+            from { opacity: 0; right: 0; }
+            to { opacity: 1; right: 1.5rem; }
+        }
+        @media (max-width: 600px) {
+            .danger-notify, .success-notify {
+                right: 0.5rem !important;
+                left: 0.5rem !important;
+                max-width: none;
+                width: auto;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
     <?php require('helperFunction/SweetAlert.php'); ?>
 </head>
 
 <body>
+    <script>
+        var showSignup = <?php echo $show_signup ? 'true' : 'false'; ?>;
+    </script>
     <?php $flash_error = get_flash('error'); if ($flash_error): ?>
         <div class="danger-notify" id="flash-danger"><span><?php echo $flash_error; ?></span></div>
     <?php endif; ?>
@@ -223,7 +259,7 @@ function get_flash($key) {
                 <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.875rem;">
                     Join us and find your perfect room
                 </p>
-                
+
                 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" class="register-form" id="register-form">
                     <div class="form-group">
                         <label for="user_name">Full Name<span class="required">*</span></label>
@@ -279,10 +315,8 @@ function get_flash($key) {
         </div>
     </div>
 
-    <!-- Enhanced Alert Box for Validation Messages -->
-    <div id="alert-box" class="alert-box">
-        <div class="alert-message" id="alert-message"></div>
-    </div>
+    <!-- Single Popup Notification Container -->
+    <div id="popup-notify" class="danger-notify" style="display:none;"><span id="popup-message"></span></div>
 
     <script src="admin/login.js"></script>
     <script>
@@ -359,6 +393,47 @@ function get_flash($key) {
                     }, 5000);
                 }
             });
+
+            // Show signup form if registration failed
+            if (typeof showSignup !== 'undefined' && showSignup) {
+                document.getElementById('login-form').classList.remove('visible');
+                document.getElementById('signup-form').classList.add('visible');
+            }
+
+            // Show popup notification for errors/success
+            var popup = document.getElementById('popup-notify');
+            var popupMsg = document.getElementById('popup-message');
+            var msg = '';
+            var type = 'danger';
+            <?php
+            $popup_message = '';
+            $popup_type = 'danger';
+            if (isset($login_error) && $login_error) {
+                $popup_message = $login_error;
+                $popup_type = 'danger';
+            } elseif (isset($form_error) && $form_error) {
+                $popup_message = $form_error;
+                $popup_type = 'danger';
+            } elseif ($flash_error) {
+                $popup_message = $flash_error;
+                $popup_type = 'danger';
+            } elseif ($flash_success) {
+                $popup_message = $flash_success;
+                $popup_type = 'success';
+            }
+            ?>
+            msg = <?php echo json_encode($popup_message); ?>;
+            type = <?php echo json_encode($popup_type); ?>;
+            if (msg && popup && popupMsg) {
+                popupMsg.textContent = msg;
+                popup.className = type === 'success' ? 'success-notify' : 'danger-notify';
+                popup.style.display = 'block';
+                popup.style.opacity = '1';
+                setTimeout(function() {
+                    popup.style.opacity = '0';
+                    setTimeout(function() { popup.style.display = 'none'; }, 1000);
+                }, 6000);
+            }
         });
     </script>
 </body>

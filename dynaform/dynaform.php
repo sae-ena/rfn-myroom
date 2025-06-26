@@ -1,7 +1,6 @@
-<title>Manage Dynamic Form</title>
 <?php
-include '../admin/dbConnect.php';
 require "../admin/leftSidebar.php";
+include '../admin/dbConnect.php';
 
 if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['formId'])) {
     $formId = $_GET['formId'];
@@ -199,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['formId'])) {
         
 
     </script>
-
+<title>Manage Dynamic Form</title>
 </head>
 <body>
 <div class="dashboard-content">

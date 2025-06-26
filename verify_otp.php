@@ -24,15 +24,15 @@ $max_resend = 3;
 // Handle OTP verification
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_otp'])) {
     $input_otp = $_POST['otp_code'] ?? '';
-    if ($otpRow['is_verified']) {
+    if ($otpRow['status'] == 'verified') {
         $error = 'OTP already verified.';
-    } elseif ($otpRow['tries'] >= $max_tries) {
+    } elseif ($otpRow['max_tries'] >= $max_tries) {
         $error = 'Maximum verification attempts exceeded.';
     } elseif (strtotime($otpRow['expires_at']) < time()) {
         $error = 'OTP expired. Please resend.';
-    } elseif ($input_otp == $otpRow['otp_code']) {
+    } elseif ($input_otp == $otpRow['otp']) {
         // Mark OTP as verified
-        $conn->query("UPDATE otp_verifications SET is_verified=1 WHERE id='{$otpRow['id']}'");
+        $conn->query("UPDATE otp_verifications SET `status`='verified' WHERE id='{$otpRow['id']}'");
         // Activate user
         $conn->query("UPDATE users SET user_status='active' WHERE user_id='$user_id'");
         // Success message and redirect
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_otp'])) {
         exit();
     } else {
         // Increment tries
-        $conn->query("UPDATE otp_verifications SET tries = tries + 1 WHERE id='{$otpRow['id']}'");
+        $conn->query("UPDATE otp_verifications SET max_tries = max_tries + 1 WHERE id='{$otpRow['id']}'");
         $error = 'Invalid OTP. Please try again.';
         // Refresh OTP row
         $res = $conn->query("SELECT * FROM otp_verifications WHERE id='{$otpRow['id']}'");
@@ -51,13 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_otp'])) {
 
 // Handle OTP resend
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp'])) {
-    if ($otpRow['resend_count'] >= $max_resend) {
+    if ($otpRow['max_tries'] >= $max_resend) {
         $error = 'Resend limit reached.';
     } else {
         // Generate new OTP
         $new_otp = rand(100000, 999999);
         $expires_at = date('Y-m-d H:i:s', strtotime('+10 minutes'));
-        $conn->query("UPDATE otp_verifications SET otp_code='$new_otp', expires_at='$expires_at', tries=0, resend_count=resend_count+1, is_verified=0 WHERE id='{$otpRow['id']}'");
+        $conn->query("UPDATE otp_verifications SET otp_code='$new_otp', expires_at='$expires_at', max_tries= max_tries+1 WHERE id='{$otpRow['id']}'");
         // TODO: Send OTP via email/SMS here
         $success = 'A new OTP has been sent.';
         // Refresh OTP row

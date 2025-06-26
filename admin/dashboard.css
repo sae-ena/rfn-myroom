@@ -50,6 +50,23 @@ body {
     background-color: #ff6600;
 }
 
+#mainSettingsToggle {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 18px;
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+#mainSettingsToggle:hover {
+    background-color: #ff6600;
+}
+
 /* Main Dashboard Content */
 .dashboard-content {
     margin-left: 250px;

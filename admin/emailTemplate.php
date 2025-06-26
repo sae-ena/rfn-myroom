@@ -20,34 +20,75 @@ $id = isset($_GET['id']) ? intval($_GET['id']) : null;
 $popupMessage = '';
 $popupType = '';
 
+// Function to clean up message content
+function clean_message($message) {
+    // Normalize all line endings to \n
+    $message = str_replace(["\r\n", "\r"], "\n", $message);
+    // Remove multiple consecutive blank lines (more than 2 newlines)
+    $message = preg_replace("/\n{3,}/", "\n\n", $message);
+    // Trim leading/trailing whitespace and newlines
+    $message = trim($message);
+    return $message;
+}
+
 // Handle Add/Edit Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $slug = mysqli_real_escape_string($conn, $_POST['slug']);
-    $subject_title = mysqli_real_escape_string($conn, $_POST['subject_title']);
-    $user_message = mysqli_real_escape_string($conn, $_POST['user_message']);
-    $admin_mail = mysqli_real_escape_string($conn, $_POST['admin_mail']);
-    $admin_message = mysqli_real_escape_string($conn, $_POST['admin_message']);
+    $slug = trim($_POST['slug']);
+    $subject_title = trim($_POST['subject_title']);
+    $user_message = trim($_POST['user_message']);
+    $admin_mail = trim($_POST['admin_mail']);
+    $admin_message = clean_message($_POST['admin_message']);
     $status = isset($_POST['status']) ? intval($_POST['status']) : 1;
-    $template_variables = mysqli_real_escape_string($conn, $_POST['template_variables']);
     $now = date('Y-m-d H:i:s');
 
-    // Check for unique slug
-    $slugCheckSql = "SELECT id FROM email_templates WHERE slug = '$slug'";
-    if (isset($_POST['template_id']) && $_POST['template_id'] !== '') {
-        $template_id = intval($_POST['template_id']);
-        $slugCheckSql .= " AND id != $template_id";
+    // Validation
+    $validationErrors = [];
+    if ($slug === '') {
+        $validationErrors[] = 'Slug is required.';
     }
-    $slugCheckResult = $conn->query($slugCheckSql);
-    if ($slugCheckResult && $slugCheckResult->num_rows > 0) {
-        $popupMessage = "Slug must be unique. This slug is already used.";
-        $popupType = "error";
+    if ($subject_title === '') {
+        $validationErrors[] = 'Subject Title is required.';
+    }
+    if ($user_message === '') {
+        $validationErrors[] = 'User Message is required.';
+    }
+    if ($admin_mail !== '' && !filter_var($admin_mail, FILTER_VALIDATE_EMAIL)) {
+        $validationErrors[] = 'Admin Mail must be a valid email address.';
+    }
+    // Check for unique slug
+    if ($slug !== '') {
+        $slugEscaped = mysqli_real_escape_string($conn, $slug);
+        $slugCheckSql = "SELECT id FROM email_templates WHERE slug = '$slugEscaped'";
+        if (isset($_POST['template_id']) && $_POST['template_id'] !== '') {
+            $template_id = intval($_POST['template_id']);
+            $slugCheckSql .= " AND id != $template_id";
+        }
+        $slugCheckResult = $conn->query($slugCheckSql);
+        if ($slugCheckResult && $slugCheckResult->num_rows > 0) {
+            $validationErrors[] = 'Slug must be unique. This slug is already used.';
+        }
+    }
+
+    if (!empty($validationErrors)) {
+        $popupMessage = '<ul style="margin:0 0 0 18px;padding:0 0 0 10px;">';
+        foreach ($validationErrors as $err) {
+            $popupMessage .= '<li style="color:#b71c1c;font-size:1.05em;line-height:1.7;">' . htmlspecialchars($err) . '</li>';
+        }
+        $popupMessage .= '</ul>';
+        $popupType = 'error';
     } else {
+        $slug = mysqli_real_escape_string($conn, $slug);
+        $subject_title = mysqli_real_escape_string($conn, $subject_title);
+        $user_message = clean_message($user_message);
+        $user_message = mysqli_real_escape_string($conn, $user_message);
+        $admin_mail = mysqli_real_escape_string($conn, $admin_mail);
+        $admin_message = mysqli_real_escape_string($conn, $admin_message);
         if (isset($_POST['template_id']) && $_POST['template_id'] !== '') {
             // Edit
             $template_id = intval($_POST['template_id']);
-            $sql = "UPDATE email_templates SET subject_title=?, slug=?, user_message=?, admin_mail=?, admin_message=?, status=?, template_variables=?, updated_at=? WHERE id=?";
+            $sql = "UPDATE email_templates SET subject_title=?, slug=?, user_message=?, admin_mail=?, admin_message=?, status=?,  updated_at=? WHERE id=?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssssisssi", $subject_title, $slug, $user_message, $admin_mail, $admin_message, $status, $template_variables, $now, $template_id);
+            $stmt->bind_param("ssssisssi", $subject_title, $slug, $user_message, $admin_mail, $admin_message, $status, $now, $template_id);
             if ($stmt->execute()) {
                 $popupMessage = "Email template updated successfully.";
                 $popupType = "success";
@@ -58,9 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         } else {
             // Add
-            $sql = "INSERT INTO email_templates (subject_title, slug, user_message, admin_mail, admin_message, status, template_variables, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO email_templates (subject_title, slug, user_message, admin_mail, admin_message, status,  created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssssissss", $subject_title, $slug, $user_message, $admin_mail, $admin_message, $status, $template_variables, $now, $now);
+            $stmt->bind_param("ssssissss", $subject_title, $slug, $user_message, $admin_mail, $admin_message, $status, $now, $now);
             if ($stmt->execute()) {
                 $popupMessage = "Email template added successfully.";
                 $popupType = "success";
@@ -112,9 +153,11 @@ if ($action === 'edit' && $id) {
 }
 ?>
 <div class="dashboard-content">
-    <div class="form-container" style="margin-left: 260px; padding: 5px; max-width: 1100px;">
-        <h1 class="roomH1" style="color:white">Email Template Manager</h1>
-        <button onclick="showAddModal()" class="edit-button" style="margin-bottom: 15px;">Add New Template</button>
+    <div class="email-template-header align-title-table">
+        <h1 class="page-title">Email Template Manager</h1>
+        <button onclick="showAddModal()" class="edit-button add-btn-top">Add New Template</button>
+    </div>
+    <div class="form-container">
         <table class="room-table" style="width:100%;margin-top:20px;">
             <thead><tr><th>ID</th><th>Subject</th><th>Slug</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
@@ -124,11 +167,15 @@ if ($action === 'edit' && $id) {
                     <td><?= htmlspecialchars($template['subject_title']) ?></td>
                     <td><?= htmlspecialchars($template['slug']) ?></td>
                     <td>
-                        <?php if ($template['status']): ?>
-                            <span class="edit-button" style="background:#2ac000; color:white; padding:4px 12px; border-radius:5px; font-size:14px;">Active</span>
-                        <?php else: ?>
-                            <span class="delete-button" style="padding:4px 12px; border-radius:5px; font-size:14px;">Inactive</span>
-                        <?php endif; ?>
+                        <form action="emailTemplate.php" method="POST" style="display:inline;">
+                            <input type="hidden" name="statusChange" value="<?= $template['id'] ?>">
+                            <input type="hidden" name="statusValue" value="<?= $template['status'] ?>">
+                            <?php if($template['status']) {
+                                echo '<button class="status-toggle-btn active-status" type="submit">Active</button>';
+                            } else {
+                                echo '<button class="status-toggle-btn inactive-status" type="submit">Inactive</button>';
+                            } ?>
+                        </form>
                     </td>
                     <td>
                         <button onclick="showEditModal(<?= $template['id'] ?>)" class="edit-button">Edit</button>
@@ -158,24 +205,26 @@ if ($action === 'edit' && $id) {
 </div>
 <!-- Add/Edit Modal -->
 <div id="templateModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <span class="close" onclick="closeTemplateModal()">&times;</span>
-        <h2 id="modalTitle">Add Email Template</h2>
+    <div class="modal-content modern-modal compact-modal">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add Email Template</h2>
+            <span class="close" onclick="closeTemplateModal()">&times;</span>
+        </div>
         <form id="templateForm" method="POST" action="emailTemplate.php">
             <input type="hidden" name="template_id" id="template_id">
-            <label>Subject Title:<br><input type="text" name="subject_title" id="subject_title" required class="input-field"></label><br><br>
-            <label>User Message:<br><textarea name="user_message" id="user_message" rows="6" class="input-field"></textarea></label><br><br>
+            <label>Subject Title:<br><input type="text" name="subject_title" id="subject_title" required class="input-field"></label><br>
+            <label>User Message:<br><textarea name="user_message" id="user_message" rows="6" class="input-field"></textarea></label><br>
             <label>Admin Mail:<br><input type="email" name="admin_mail" id="admin_mail" class="input-field"></label><br><br>
-            <label>Admin Message:<br><textarea name="admin_message" id="admin_message" rows="6" class="input-field"></textarea></label><br><br>
+            <label>Admin Message:<br><textarea name="admin_message" id="admin_message" rows="6" class="input-field"></textarea></label><br>
             <label>Status:<br>
                 <select name="status" id="status" class="input-field">
                     <option value="1">Active</option>
                     <option value="0">Inactive</option>
                 </select>
-            </label><br><br>
-            <label>Template Variables (comma separated):<br><input type="text" name="template_variables" id="template_variables" placeholder="e.g. name,email,otp" class="input-field"></label><br><br>
+            </label><br>
+           
             <label>Slug:<br><input type="text" name="slug" id="slug" required class="input-field"></label><br><br>
-            <button type="submit" class="edit-button">Save Template</button>
+            <button type="submit" class="edit-button modern-btn">Save Template</button>
         </form>
     </div>
 </div>
@@ -200,6 +249,13 @@ if ($action === 'edit' && $id) {
         <p><?= htmlspecialchars($popupMessage) ?></p>
     </div>
 </div>
+<?php if (isset($popupMessage) && $popupMessage && $popupType === 'success'): ?>
+<script>
+    setTimeout(function() {
+        window.location.href = 'emailTemplate.php';
+    }, 300);
+</script>
+<?php endif; ?>
 <script>
 // Modal logic
 function showAddModal() {
@@ -210,7 +266,6 @@ function showAddModal() {
     document.getElementById('admin_mail').value = '';
     document.getElementById('admin_message').value = '';
     document.getElementById('status').value = '1';
-    document.getElementById('template_variables').value = '';
     document.getElementById('slug').value = '';
     document.getElementById('templateModal').style.display = 'block';
 }
@@ -226,7 +281,6 @@ function showEditModal(id) {
         document.getElementById('admin_mail').value = template.admin_mail;
         document.getElementById('admin_message').value = template.admin_message;
         document.getElementById('status').value = template.status;
-        document.getElementById('template_variables').value = template.template_variables;
         document.getElementById('slug').value = template.slug;
         document.getElementById('templateModal').style.display = 'block';
     }
@@ -270,11 +324,95 @@ window.onclick = function(event) {
     background-color: #fefefe;
     margin: 5% auto;
     padding: 30px 40px;
-    border: 1px solid #888;
-    width: 60%;
+    border: 1px solid #e0e0e0;
+    width: 70%;
     border-radius: 18px;
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 32px rgba(44,44,46,0.18), 0px 1.5px 6px rgba(0,0,0,0.08);
     position: relative;
+    font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+    transition: box-shadow 0.2s;
+}
+
+/* Modern modal header */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, #ff6600 60%, #ffb347 100%);
+    padding: 18px 30px 12px 30px;
+    border-radius: 16px 16px 0 0;
+    margin: -30px -40px 20px -40px;
+}
+.modal-header h2 {
+    color: #fff;
+    font-size: 1.5rem;
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.modal-header .close {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    position: static;
+    float: none;
+}
+.modal-header .close:hover {
+    color: #222;
+}
+
+/* Modern form fields */
+.input-field {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    margin-top: 6px;
+    margin-bottom: 10px;
+    background: #fafafa;
+    transition: border 0.2s;
+}
+.input-field:focus {
+    border: 1.5px solid #ff6600;
+    outline: none;
+    background: #fff;
+}
+
+/* Modern button */
+.modern-btn {
+    background: linear-gradient(90deg, #ff6600 60%, #ffb347 100%);
+    color: #fff;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(255,102,0,0.08);
+    transition: background 0.2s, box-shadow 0.2s;
+    margin-top: 10px;
+}
+.modern-btn:hover {
+    background: linear-gradient(90deg, #ffb347 60%, #ff6600 100%);
+    color: #222;
+    box-shadow: 0 4px 16px rgba(255,102,0,0.15);
+}
+
+/* Responsive modal */
+@media (max-width: 700px) {
+    .modal-content, .modern-modal {
+        width: 99% !important;
+        padding: 18px 8px;
+    }
+    .modal-header {
+        padding: 12px 10px 8px 10px;
+        margin: -18px -8px 16px -8px;
+    }
 }
 .close {
     color: #aaa;
@@ -335,5 +473,105 @@ window.onclick = function(event) {
 .page-btn.active, .page-btn:hover {
     background: #4CAF50;
     color: #fff;
+}
+.form-container {
+    margin: 0 auto;
+    max-width: 1100px;
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+}
+.compact-modal {
+    max-width: 520px !important;
+    width: 99% !important;
+}
+.email-template-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+.page-title {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    padding-left: 0;
+}
+.add-btn-top {
+    background: linear-gradient(90deg, #ff6600 60%, #ffb347 100%);
+    color: #fff;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(255,102,0,0.08);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.add-btn-top:hover {
+    background: linear-gradient(90deg, #ffb347 60%, #ff6600 100%);
+    color: #222;
+    box-shadow: 0 4px 16px rgba(255,102,0,0.15);
+}
+.status-toggle-btn {
+    padding: 6px 18px;
+    border-radius: 5px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #e0e0e0;
+    color: #222;
+    transition: background 0.2s, color 0.2s;
+}
+.status-toggle-btn.active-status {
+    background: #2ac000;
+    color: #fff;
+}
+.status-toggle-btn.inactive-status {
+    background: #d32f2f;
+    color: #fff;
+}
+.status-toggle-btn:hover {
+    opacity: 0.85;
+}
+.email-template-bg, .white-bg {
+    background: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+.align-title-table {
+    max-width: 1100px;
+    margin: 0 auto 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.form-container {
+    margin-top: 0;
+    padding-top: 18px;
+    color: #fff;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.room-table th, .room-table td {
+    color: #222;
+}
+.room-table th {
+    background: #2c2c2e;
+    color: #fff;
+}
+.add-btn-top {
+    background: linear-gradient(90deg, #ff6600 60%, #ffb347 100%);
+    color: #fff;
+}
+.add-btn-top:hover {
+    background: linear-gradient(90deg, #ffb347 60%, #ff6600 100%);
+    color: #222;
 }
 </style> 
