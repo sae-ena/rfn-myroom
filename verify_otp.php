@@ -1,6 +1,7 @@
 <?php
 session_start();
 require('admin/dbConnect.php');
+require_once('helperFunction/mail.php');
 
 // Get user_id from GET or POST
 $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : (isset($_POST['user_id']) ? intval($_POST['user_id']) : 0);
@@ -21,51 +22,7 @@ $error = $success = '';
 $max_tries = 5;
 $max_resend = 3;
 
-// Handle OTP verification
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_otp'])) {
-    $input_otp = $_POST['otp_code'] ?? '';
-    if ($otpRow['status'] == 'verified') {
-        $error = 'OTP already verified.';
-    } elseif ($otpRow['max_tries'] >= $max_tries) {
-        $error = 'Maximum verification attempts exceeded.';
-    } elseif (strtotime($otpRow['expires_at']) < time()) {
-        $error = 'OTP expired. Please resend.';
-    } elseif ($input_otp == $otpRow['otp']) {
-        // Mark OTP as verified
-        $conn->query("UPDATE otp_verifications SET `status`='verified' WHERE id='{$otpRow['id']}'");
-        // Activate user
-        $conn->query("UPDATE users SET user_status='active' WHERE user_id='$user_id'");
-        // Success message and redirect
-        set_flash('success', 'Your account has been verified! You can now log in.');
-        header('Location: login.php');
-        exit();
-    } else {
-        // Increment tries
-        $conn->query("UPDATE otp_verifications SET max_tries = max_tries + 1 WHERE id='{$otpRow['id']}'");
-        $error = 'Invalid OTP. Please try again.';
-        // Refresh OTP row
-        $res = $conn->query("SELECT * FROM otp_verifications WHERE id='{$otpRow['id']}'");
-        $otpRow = $res ? $res->fetch_assoc() : $otpRow;
-    }
-}
-
-// Handle OTP resend
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp'])) {
-    if ($otpRow['max_tries'] >= $max_resend) {
-        $error = 'Resend limit reached.';
-    } else {
-        // Generate new OTP
-        $new_otp = rand(100000, 999999);
-        $expires_at = date('Y-m-d H:i:s', strtotime('+10 minutes'));
-        $conn->query("UPDATE otp_verifications SET otp_code='$new_otp', expires_at='$expires_at', max_tries= max_tries+1 WHERE id='{$otpRow['id']}'");
-        // TODO: Send OTP via email/SMS here
-        $success = 'A new OTP has been sent.';
-        // Refresh OTP row
-        $res = $conn->query("SELECT * FROM otp_verifications WHERE id='{$otpRow['id']}'");
-        $otpRow = $res ? $res->fetch_assoc() : $otpRow;
-    }
-}
-
+// Flash message helpers
 function set_flash($key, $message) {
     $_SESSION['flash'][$key] = $message;
 }
@@ -76,6 +33,68 @@ function get_flash($key) {
         return $msg;
     }
     return null;
+}
+
+$flash_error = get_flash('error');
+$flash_success = get_flash('success');
+
+// Handle OTP verification
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_otp'])) {
+    $input_otp = $_POST['otp_code'] ?? '';
+    if ($otpRow['status'] == 'verified') {
+        set_flash('error', 'OTP already verified.');
+    } elseif ($otpRow['max_tries'] >= $max_tries) {
+        set_flash('error', 'Maximum verification attempts exceeded.');
+    } elseif (strtotime($otpRow['expires_at']) < time()) {
+        set_flash('error', 'OTP expired. Please resend.');
+    } elseif ($input_otp == $otpRow['otp']) {
+        // Mark OTP as verified
+        $conn->query("UPDATE otp_verifications SET `status`='verified' WHERE id='{$otpRow['id']}'");
+        // Activate user
+        $conn->query("UPDATE users SET user_status='active' WHERE user_id='$user_id'");
+        set_flash('success', 'Your account has been verified! You can now log in.');
+        header('Location: login.php');
+        exit();
+    } else {
+        // Increment tries
+        $conn->query("UPDATE otp_verifications SET max_tries = max_tries + 1 WHERE id='{$otpRow['id']}'");
+        set_flash('error', 'Invalid OTP. Please try again.');
+        // Refresh OTP row
+        $res = $conn->query("SELECT * FROM otp_verifications WHERE id='{$otpRow['id']}'");
+        $otpRow = $res ? $res->fetch_assoc() : $otpRow;
+    }
+    header("Location: verify_otp.php?user_id=$user_id");
+    exit();
+}
+
+// Handle OTP resend (separate form, no OTP input required)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp'])) {
+    if ($otpRow['max_tries'] >= $max_resend) {
+        set_flash('error', 'Resend limit reached.');
+    } else {
+        // Generate new OTP
+        $new_otp = rand(100000, 999999);
+        $expires_at = date('Y-m-d H:i:s', strtotime('+3 minutes'));
+        $conn->query("UPDATE otp_verifications SET otp='$new_otp', expires_at='$expires_at', max_tries= max_tries+1, status='pending' WHERE id='{$otpRow['id']}'");
+        // Send OTP via email (using mail helper)
+        $userRes = $conn->query("SELECT user_name, user_email FROM users WHERE user_id='$user_id' LIMIT 1");
+        $userRow = $userRes ? $userRes->fetch_assoc() : null;
+        if ($userRow) {
+            list($subject, $message) = getOtpEmailForUser($conn, $userRow['user_name'], $new_otp, 3);
+            if (sendMailPHPMailer($userRow['user_email'], $subject, $message)) {
+                set_flash('success', 'A new OTP has been sent to your email.');
+            } else {
+                set_flash('error', 'Failed to send OTP email. Please try again later.');
+            }
+        } else {
+            set_flash('error', 'User not found for OTP resend.');
+        }
+        // Refresh OTP row
+        $res = $conn->query("SELECT * FROM otp_verifications WHERE id='{$otpRow['id']}'");
+        $otpRow = $res ? $res->fetch_assoc() : $otpRow;
+    }
+    header("Location: verify_otp.php?user_id=$user_id");
+    exit();
 }
 
 ?><!DOCTYPE html>
@@ -95,6 +114,32 @@ function get_flash($key) {
         .otp-error { color: #e53935; margin-bottom: 1rem; }
         .otp-success { color: #388e3c; margin-bottom: 1rem; }
         @media (max-width: 500px) { .otp-card { padding: 1.2rem 0.5rem; width: 98vw; } }
+        .danger-notify, .success-notify {
+            position: fixed !important;
+            top: 1.5rem !important;
+            right: 1.5rem !important;
+            left: auto !important;
+            max-width: 350px;
+            width: calc(100vw - 3rem);
+            text-align: left;
+            z-index: 2000;
+            animation: fadeInRight 0.3s ease;
+            transition: opacity 0.5s;
+            transform: none !important;
+        }
+        @keyframes fadeInRight {
+            from { opacity: 0; right: 0; }
+            to { opacity: 1; right: 1.5rem; }
+        }
+        @media (max-width: 600px) {
+            .danger-notify, .success-notify {
+                right: 0.5rem !important;
+                left: 0.5rem !important;
+                max-width: none;
+                width: auto;
+                font-size: 0.95rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -103,40 +148,54 @@ function get_flash($key) {
         <h2>OTP Verification</h2>
         <div class="otp-info">
             Please enter the 6-digit OTP sent to your email/phone.<br>
-            <b>Attempts left:</b> <?php echo max(0, $max_tries - $otpRow['tries']); ?>,
-            <b>Resends left:</b> <?php echo max(0, $max_resend - $otpRow['resend_count']); ?>
         </div>
-        <?php $flash_error = get_flash('error'); if ($flash_error): ?>
-            <div class="danger-notify" id="flash-danger"><span><?php echo $flash_error; ?></span></div>
-        <?php endif; ?>
-        <?php $flash_success = get_flash('success'); if ($flash_success): ?>
-            <div class="success-notify" id="flash-success"><span><?php echo $flash_success; ?></span></div>
-        <?php endif; ?>
         <form method="POST" style="margin-bottom:1.2rem;">
             <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_id); ?>">
             <input class="otp-input" type="text" name="otp_code" maxlength="6" pattern="\d{6}" required placeholder="------" autocomplete="one-time-code">
             <div>
-                <button class="otp-btn" type="submit" name="verify_otp" <?php echo ($otpRow['tries'] >= $max_tries || $otpRow['is_verified']) ? 'disabled' : ''; ?>>Verify OTP</button>
-                <button class="otp-btn" type="submit" name="resend_otp" <?php echo ($otpRow['resend_count'] >= $max_resend || $otpRow['is_verified']) ? 'disabled' : ''; ?>>Resend OTP</button>
+                <button class="otp-btn" type="submit" name="verify_otp" <?php echo (($otpRow['max_tries'] >= $max_tries) || ($otpRow['status'] == "verified")) ? 'disabled' : ''; ?>>Verify OTP</button>
             </div>
+        </form>
+        <form method="POST" style="margin-bottom:1.2rem;">
+            <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_id); ?>">
+            <button class="otp-btn" type="submit" name="resend_otp" <?php echo (($otpRow['max_tries'] >= $max_tries) || ($otpRow['status'] == "verified")) ? 'disabled' : ''; ?>>Resend OTP</button>
         </form>
         <div class="otp-info">Didn't receive the code? Check your spam or try resending.</div>
     </div>
 </div>
+<!-- Single Popup Notification Container -->
+<div id="popup-notify" class="danger-notify" style="display:none;"><span id="popup-message"></span></div>
 <script>
     // Ensure flash popups are visible for 5 seconds
     window.addEventListener('DOMContentLoaded', function() {
-        const danger = document.getElementById('flash-danger');
-        const success = document.getElementById('flash-success');
-        [danger, success].forEach(function(el) {
-            if (el) {
-                el.style.display = 'block';
-                setTimeout(function() {
-                    el.style.opacity = '0';
-                    setTimeout(function() { el.remove(); }, 1000);
-                }, 5000);
-            }
-        });
+        // Show popup notification for errors/success
+        var popup = document.getElementById('popup-notify');
+        var popupMsg = document.getElementById('popup-message');
+        var msg = '';
+        var type = 'danger';
+        <?php
+        $popup_message = '';
+        $popup_type = 'danger';
+        if ($flash_error) {
+            $popup_message = $flash_error;
+            $popup_type = 'danger';
+        } elseif ($flash_success) {
+            $popup_message = $flash_success;
+            $popup_type = 'success';
+        }
+        ?>
+        msg = <?php echo json_encode($popup_message); ?>;
+        type = <?php echo json_encode($popup_type); ?>;
+        if (msg && popup && popupMsg) {
+            popupMsg.textContent = msg;
+            popup.className = type === 'success' ? 'success-notify' : 'danger-notify';
+            popup.style.display = 'block';
+            popup.style.opacity = '1';
+            setTimeout(function() {
+                popup.style.opacity = '0';
+                setTimeout(function() { popup.style.display = 'none'; }, 1000);
+            }, 6000);
+        }
     });
 </script>
 </body>

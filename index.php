@@ -5,7 +5,11 @@ if (!isset($_SESSION)) {
 require_once('helperFunction/helpers.php');
 require('admin/dbConnect.php'); // Needed for getRoomData
 
-if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['serachRoom'])) {
+if (
+    $_SERVER['REQUEST_METHOD'] == "GET" &&
+    isset($_GET['serachRoom']) &&
+    !isset($_GET['error']) // Only redirect if error is not already present
+) {
     $searchLocation = trim($_GET['searchLocation'] ?? "");
     $searchType = trim($_GET['searchRoomType'] ?? "");
     if (empty($searchLocation) && empty($searchType)) {
@@ -249,34 +253,67 @@ $errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
 </script>
 <?php endif; ?>
 
+<head>
+    <style>
+    .danger-notify, .success-notify {
+        position: fixed !important;
+        top: 1.5rem !important;
+        right: 1.5rem !important;
+        left: auto !important;
+        max-width: 350px;
+        width: calc(100vw - 3rem);
+        text-align: left;
+        z-index: 2000;
+        animation: fadeInRight 0.3s ease;
+        transition: opacity 0.5s;
+        transform: none !important;
+    }
+    @keyframes fadeInRight {
+        from { opacity: 0; right: 0; }
+        to { opacity: 1; right: 1.5rem; }
+    }
+    @media (max-width: 600px) {
+        .danger-notify, .success-notify {
+            right: 0.5rem !important;
+            left: 0.5rem !important;
+            max-width: none;
+            width: auto;
+            font-size: 0.95rem;
+        }
+    }
+    </style>
+</head>
+<?php require('footer.php'); ?>
 <!-- Single Popup Notification Container for search errors -->
-<div id="popup-notify" class="danger-notify" style="display:none;position:fixed;top:1.5rem;right:1.5rem;z-index:99999;"><span id="popup-message"></span></div>
+<div id="popup-notify" class="danger-notify" style="display:none;"><span id="popup-message"></span></div>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Get error from URL
-    const params = new URLSearchParams(window.location.search);
-    const error = params.get('error');
-    if (error) {
-        var popup = document.getElementById('popup-notify');
-        var popupMsg = document.getElementById('popup-message');
-        popupMsg.textContent = decodeURIComponent(error.replace(/\+/g, ' '));
-        popup.className = 'danger-notify';
+window.addEventListener('DOMContentLoaded', function() {
+    var popup = document.getElementById('popup-notify');
+    var popupMsg = document.getElementById('popup-message');
+    var msg = '';
+    var type = 'danger';
+    <?php
+    $popup_message = '';
+    $popup_type = 'danger';
+    if ($errorMessage) {
+        $popup_message = $errorMessage;
+        $popup_type = 'danger';
+    }
+    ?>
+    msg = <?php echo json_encode($popup_message); ?>;
+    type = <?php echo json_encode($popup_type); ?>;
+    if (msg && popup && popupMsg) {
+        popupMsg.textContent = msg;
+        popup.className = type === 'success' ? 'success-notify' : 'danger-notify';
         popup.style.display = 'block';
         popup.style.opacity = '1';
         setTimeout(function() {
             popup.style.opacity = '0';
             setTimeout(function() { popup.style.display = 'none'; }, 1000);
         }, 6000);
-        // Remove error from URL without reloading
-        if (window.history.replaceState) {
-            const url = new URL(window.location);
-            url.searchParams.delete('error');
-            window.history.replaceState({}, document.title, url);
-        }
     }
 });
 </script>
-<?php require('footer.php'); ?>
 
 <script>
 // Enhanced Search Functionality

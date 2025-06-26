@@ -41,7 +41,7 @@ function getOtpEmailForUser($conn, $name, $otp, $expires) {
  * @return bool
  */
 function sendMailPHPMailer($to, $subject, $body) {
-    $autoloadPath = __DIR__ . '/../../vendor/autoload.php';
+    $autoloadPath = __DIR__ . '/../vendor/autoload.php';
     if (!file_exists($autoloadPath)) {
         // Log error and fail gracefully
         file_put_contents(__DIR__ . '/../email_error_log.txt', "[" . date('Y-m-d H:i:s') . "] autoload.php missing at $autoloadPath\n", FILE_APPEND);

@@ -102,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         $expires_minutes = 2;
                         list($subject, $message) = getOtpEmailForUser($conn, $user_name, $otp_code, $expires_minutes);
                         if (!sendMailPHPMailer($user_email, $subject, $message)) {
+                              $conn->rollback();
                             throw new Exception("Failed to send OTP email. Please check your email address.");
                         }
                         // All good, commit transaction
