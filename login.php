@@ -71,10 +71,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             } else {
                 // Hash the password
                 $hashed_password = password_hash($user_password, PASSWORD_DEFAULT);
-                // Prepare the SQL query to insert data into the 'users' table
-                $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_status, user_password, user_type) VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '" . $conn->real_escape_string($user_signup_default_status) . "', '$hashed_password', 'user')";
-                $sqlResult = InsertRoomData::insertData($query);
-                if ($sqlResult) {
+                // Begin transaction
+                $conn->begin_transaction();
+                try {
+                    // Prepare the SQL query to insert data into the 'users' table
+                    $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_status, user_password, user_type) VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '" . $conn->real_escape_string($user_signup_default_status) . "', '$hashed_password', 'user')";
+                    $sqlResult = InsertRoomData::insertData($query);
+                    if (!$sqlResult) {
+                        throw new Exception("Registration failed. Please try again later.");
+                    }
                     // Get the inserted user_id
                     $user_id = $conn->insert_id;
                     if (!$user_id) {
@@ -88,21 +93,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         $otp_code = rand(100000, 999999);
                         $expires_at = date('Y-m-d H:i:s', strtotime('+2 minutes'));
                         // Insert OTP into otp_verifications
-                        $conn->query("INSERT INTO otp_verifications (user_id, otp, expires_at, max_tries, `status`, created_at) VALUES ('$user_id', '$otp_code', '$expires_at', 0, 'pending', NOW())");
+                        $otpResult = $conn->query("INSERT INTO otp_verifications (user_id, otp, expires_at, max_tries, `status`, created_at) VALUES ('$user_id', '$otp_code', '$expires_at', 0, 'pending', NOW())");
+                        if (!$otpResult) {
+                            throw new Exception("Failed to create OTP record.");
+                        }
                         // Send OTP email (now using PHPMailer)
                         require_once('helperFunction/mail.php');
                         $expires_minutes = 2;
                         list($subject, $message) = getOtpEmailForUser($conn, $user_name, $otp_code, $expires_minutes);
                         if (!sendMailPHPMailer($user_email, $subject, $message)) {
-                            // Optionally log error or set $form_error
-                            // $form_error = "Failed to send OTP email. Please check your email address.";
+                            throw new Exception("Failed to send OTP email. Please check your email address.");
                         }
+                        // All good, commit transaction
+                        $conn->commit();
                         // Redirect to OTP verification page
                         header("Location: verify_otp.php?user_id=$user_id");
                         exit();
                     } else {
-                        // OTP not required, log in or activate user directly
-                        // You can set session and redirect to dashboard or login page
+                        // OTP not required, commit and log in user
+                        $conn->commit();
                         $_SESSION['user_id'] = $user_id;
                         $_SESSION['user_email'] = $user_email;
                         $_SESSION['user_name'] = $user_name;
@@ -110,8 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         header("Location: index.php");
                         exit();
                     }
-                } else {
-                    $form_error = "Registration failed. Please try again later.";
+                } catch (Exception $e) {
+                    $conn->rollback();
+                    $form_error = $e->getMessage();
                 }
             }
         }
