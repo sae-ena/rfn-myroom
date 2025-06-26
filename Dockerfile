@@ -4,7 +4,7 @@ FROM php:8.0-apache
 # Install required PHP extensions, including mysqli, and tools for Composer
 RUN apt-get update && apt-get install -y \
     libpng-dev libjpeg-dev libfreetype6-dev \
-    git unzip zip \
+    git unzip zip libzip-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql mysqli zip \
     && apt-get clean
