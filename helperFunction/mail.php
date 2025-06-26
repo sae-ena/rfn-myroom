@@ -57,31 +57,37 @@ function getOtpEmailForUser($conn, $name, $otp, $expires) {
  * @return bool
  */
 function sendMailPHPMailer($to, $subject, $body) {
-    require_once __DIR__ . '/../../vendor/autoload.php'; // Adjust path as needed
+    $autoloadPath = __DIR__ . '/../../vendor/autoload.php';
+    if (!file_exists($autoloadPath)) {
+        // Log error and fail gracefully
+        file_put_contents(__DIR__ . '/../email_error_log.txt', "[" . date('Y-m-d H:i:s') . "] autoload.php missing at $autoloadPath\n", FILE_APPEND);
+        return false;
+    }
+    require_once $autoloadPath;
     $mail = new PHPMailer(true);
-        try {
-            // Server settings
-            $mail->isSMTP();
-            $mail->Host       = 'smtp-relay.brevo.com';
-            $mail->SMTPAuth   = true;
-            $mail->Username   = '881c47001@smtp-brevo.com';
-            $mail->Password   = 'r8yO2NtWa3X4K1qR';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = 587;
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp-relay.brevo.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = '881c47001@smtp-brevo.com';
+        $mail->Password   = 'r8yO2NtWa3X4K1qR';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
 
-            // Recipients
-            $mail->setFrom('kidssujal@gmail.com', 'Casabo Room Finder');
-            $mail->addAddress($to);
+        // Recipients
+        $mail->setFrom('kidssujal@gmail.com', 'Casabo Room Finder');
+        $mail->addAddress($to);
 
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body = $body;
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body = $body;
 
-            $mail->send();
-            return true; // Indicate success
-        } catch (Exception $e) {
-            // Log the error
-            file_put_contents('email_error_log.txt', "Email to $to failed: " . $mail->ErrorInfo . "\n", FILE_APPEND);
-            return false; // Indicate failure
-        }
+        $mail->send();
+        return true; // Indicate success
+    } catch (Exception $e) {
+        // Log the error
+        file_put_contents('email_error_log.txt', "Email to $to failed: " . $mail->ErrorInfo . "\n", FILE_APPEND);
+        return false; // Indicate failure
+    }
 }

@@ -49,6 +49,7 @@ echo'<body>
                 <li><button id="mainSettingsToggle">Main Settings &#9660;</button></li>
                 <ul id="mainSettingsSubmenu" style="display:none;list-style:none;padding-left:20px;margin:0;">
                     <li><a href="/admin/emailTemplate.php" class="nav-link" data-target="email-template">Email Template</a></li>
+                    <li><a href="/admin/backendSetting.php" class="nav-link" data-target="backend-setting">Backend Setting</a></li>
                 </ul>
                 <li><a href="/admin/dbConnect.php" class="nav-link" id="logoutBtn" >Logout</a></li>
             </ul>
@@ -90,3 +91,16 @@ mainSettingsToggle.addEventListener('click', function() {
     }
 });
 </script>
+
+<style>
+.sidebar {
+    height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE 10+ */
+}
+.sidebar::-webkit-scrollbar {
+    width: 0px;
+    background: transparent; /* Chrome/Safari/Webkit */
+}
+</style>

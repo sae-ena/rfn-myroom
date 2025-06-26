@@ -17,6 +17,17 @@ if (isset($_SESSION['user_email'])) {
     exit(); // Ensure no further code is executed after the redirection
 }
 
+// Fetch backend settings for dynamic registration
+$settings = [];
+$settingsResult = $conn->query("SELECT name, value FROM backend_settings WHERE name IN ('otp-verification', 'user-singup-default-status')");
+if ($settingsResult && $settingsResult->num_rows > 0) {
+    while ($row = $settingsResult->fetch_assoc()) {
+        $settings[$row['name']] = $row['value'];
+    }
+}
+$otp_verification_enabled = isset($settings['otp-verification']) && $settings['otp-verification'] === '1';
+$user_signup_default_status = isset($settings['user-singup-default-status']) ? $settings['user-singup-default-status'] : 'inActive';
+
 // Registration logic (re-added)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     $user_name = $user_email = $user_number = $user_location = $user_password = "";
@@ -61,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 // Hash the password
                 $hashed_password = password_hash($user_password, PASSWORD_DEFAULT);
                 // Prepare the SQL query to insert data into the 'users' table
-                $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_status, user_password, user_type) VALUES ('$user_name', '$user_email', '$user_number', '$user_location', 'inActive', '$hashed_password', 'user')";
+                $query = "INSERT INTO users (user_name, user_email, user_number, user_location, user_status, user_password, user_type) VALUES ('$user_name', '$user_email', '$user_number', '$user_location', '" . $conn->real_escape_string($user_signup_default_status) . "', '$hashed_password', 'user')";
                 $sqlResult = InsertRoomData::insertData($query);
                 if ($sqlResult) {
                     // Get the inserted user_id
@@ -72,22 +83,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         $row = $res ? $res->fetch_assoc() : null;
                         $user_id = $row ? $row['user_id'] : null;
                     }
-                    // Generate OTP
-                    $otp_code = rand(100000, 999999);
-                    $expires_at = date('Y-m-d H:i:s', strtotime('+2 minutes'));
-                    // Insert OTP into otp_verifications
-                    $conn->query("INSERT INTO otp_verifications (user_id, otp, expires_at, max_tries, `status`, created_at) VALUES ('$user_id', '$otp_code', '$expires_at', 0, 'pending', NOW())");
-                    // Send OTP email (now using PHPMailer)
-                    require_once('helperFunction/mail.php');
-                    $expires_minutes = 2;
-                    list($subject, $message) = getOtpEmailForUser($conn, $user_name, $otp_code, $expires_minutes);
-                    if (!sendMailPHPMailer($user_email, $subject, $message)) {
-                        // Optionally log error or set $form_error
-                        // $form_error = "Failed to send OTP email. Please check your email address.";
+                    if ($otp_verification_enabled) {
+                        // Generate OTP
+                        $otp_code = rand(100000, 999999);
+                        $expires_at = date('Y-m-d H:i:s', strtotime('+2 minutes'));
+                        // Insert OTP into otp_verifications
+                        $conn->query("INSERT INTO otp_verifications (user_id, otp, expires_at, max_tries, `status`, created_at) VALUES ('$user_id', '$otp_code', '$expires_at', 0, 'pending', NOW())");
+                        // Send OTP email (now using PHPMailer)
+                        require_once('helperFunction/mail.php');
+                        $expires_minutes = 2;
+                        list($subject, $message) = getOtpEmailForUser($conn, $user_name, $otp_code, $expires_minutes);
+                        if (!sendMailPHPMailer($user_email, $subject, $message)) {
+                            // Optionally log error or set $form_error
+                            // $form_error = "Failed to send OTP email. Please check your email address.";
+                        }
+                        // Redirect to OTP verification page
+                        header("Location: verify_otp.php?user_id=$user_id");
+                        exit();
+                    } else {
+                        // OTP not required, log in or activate user directly
+                        // You can set session and redirect to dashboard or login page
+                        $_SESSION['user_id'] = $user_id;
+                        $_SESSION['user_email'] = $user_email;
+                        $_SESSION['user_name'] = $user_name;
+                        // Redirect to dashboard or login page
+                        header("Location: index.php");
+                        exit();
                     }
-                    // Redirect to OTP verification page
-                    header("Location: verify_otp.php?user_id=$user_id");
-                    exit();
                 } else {
                     $form_error = "Registration failed. Please try again later.";
                 }
