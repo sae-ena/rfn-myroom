@@ -7,46 +7,41 @@ require('admin/dbConnect.php'); // Needed for getRoomData
 
 if (
     $_SERVER['REQUEST_METHOD'] == "GET" &&
-    isset($_GET['serachRoom']) &&
-    !isset($_GET['error']) // Only redirect if error is not already present
+    isset($_GET['searchRoomType']) || isset($_GET['searchLocation'])
 ) {
     $searchLocation = trim($_GET['searchLocation'] ?? "");
     $searchType = trim($_GET['searchRoomType'] ?? "");
-    if (empty($searchLocation) && empty($searchType)) {
-        $errorMessage = "Please enter a location or select a room type to search.";
-        $redirectUrl = $_SERVER['PHP_SELF'];
-        header("Location: $redirectUrl?error=" . urlencode($errorMessage));
-        exit();
-    } else {
         $searchResult = getRoomData($searchType, $searchLocation);
         if (!$searchResult) {
-            if (!empty($searchLocation) && !empty($searchType)) {
-                $searchResult = getRoomData("", $searchLocation);
-                if ($searchResult) {
-                    $errorMessage = "No {$searchType} rooms found in {$searchLocation}. Showing all available rooms in {$searchLocation} instead.";
+            if (!isset($_GET['error'])) {
+                if (!empty($searchLocation) && !empty($searchType)) {
+                    $searchResult = getRoomData("", $searchLocation);
+                    if ($searchResult) {
+                        $errorMessage = "No {$searchType} rooms found in {$searchLocation}. Showing all available rooms in {$searchLocation} instead.";
+                    } else {
+                        $errorMessage = "No rooms found in '{$searchLocation}'. Please try a different location or room type.";
+                    }
+                } elseif (!empty($searchLocation)) {
+                    $errorMessage = "No rooms found in '{$searchLocation}'. Please try a different location or check back later.";
+                } elseif (!empty($searchType)) {
+                    $errorMessage = "No {$searchType} rooms available at the moment. Please try a different room type or location.";
                 } else {
-                    $errorMessage = "No rooms found in '{$searchLocation}'. Please try a different location or room type.";
+                    $errorMessage = "No rooms found. Please try different search criteria.";
                 }
-            } elseif (!empty($searchLocation)) {
-                $errorMessage = "No rooms found in '{$searchLocation}'. Please try a different location or check back later.";
-            } elseif (!empty($searchType)) {
-                $errorMessage = "No {$searchType} rooms available at the moment. Please try a different room type or location.";
-            } else {
-                $errorMessage = "No rooms found. Please try different search criteria.";
+                $redirectUrl = $_SERVER['PHP_SELF'];
+                $params = [];
+                if (!empty($searchLocation)) {
+                    $params[] = "searchLocation=" . urlencode($searchLocation);
+                }
+                if (!empty($searchType)) {
+                    $params[] = "searchRoomType=" . urlencode($searchType);
+                }
+                $paramString = $params ? ('&' . implode('&', $params)) : '';
+                header("Location: $redirectUrl?error=" . urlencode($errorMessage) . $paramString);
+                exit();
             }
-            $redirectUrl = $_SERVER['PHP_SELF'];
-            $params = [];
-            if (!empty($searchLocation)) {
-                $params[] = "searchLocation=" . urlencode($searchLocation);
-            }
-            if (!empty($searchType)) {
-                $params[] = "searchRoomType=" . urlencode($searchType);
-            }
-            $paramString = $params ? ('&' . implode('&', $params)) : '';
-            header("Location: $redirectUrl?error=" . urlencode($errorMessage) . $paramString);
-            exit();
         }
-    }
+    
 }
 require('header.php');
 
