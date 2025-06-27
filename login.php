@@ -114,11 +114,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     } else {
                         // OTP not required, commit and log in user
                         $conn->commit();
-                        $_SESSION['user_id'] = $user_id;
-                        $_SESSION['user_email'] = $user_email;
-                        $_SESSION['user_name'] = $user_name;
-                        // Redirect to dashboard or login page
-                        header("Location: index.php");
+                        // Redirect to login page with success message
+                        set_flash('success', 'Registration successful! Please login with your credentials.');
+                        header("Location: login.php");
                         exit();
                     }
                 } catch (Exception $e) {
