@@ -26,6 +26,19 @@ RUN cd /var/www/html && composer install --no-interaction --no-dev --optimize-au
 # Now copy the rest of your app
 COPY . /var/www/html/
 
+# Ensure .htaccess is always valid and ASCII/UTF-8 (no BOM)
+RUN echo '<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpg "access plus 30 minutes"
+  ExpiresByType image/jpeg "access plus 30 minutes"
+  ExpiresByType image/png "access plus 30 minutes"
+  ExpiresByType image/gif "access plus 30 minutes"
+  ExpiresByType image/webp "access plus 30 minutes"
+  ExpiresByType text/css "access plus 1 day"
+  ExpiresByType application/javascript "access plus 1 day"
+  ExpiresByType application/x-javascript "access plus 1 day"
+</IfModule>' > /var/www/html/.htaccess
+
 # Set the working directory to /var/www/html (document root of Apache)
 WORKDIR /var/www/html/
 
