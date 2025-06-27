@@ -6,7 +6,6 @@
         <p>Your trusted partner for finding the perfect room rental, apartment, and accommodation across Nepal. From budget rooms in Kathmandu to luxury apartments in Pokhara, we connect you with verified property dealers and landlords.</p>
         <div class="footer-social">
           <a href="https://facebook.com/casaboroomfinder" aria-label="Follow us on Facebook">Facebook</a>
-          <a href="https://twitter.com/casaboroomfinder" aria-label="Follow us on Twitter">Twitter</a>
           <a href="https://instagram.com/casaboroomfinder" aria-label="Follow us on Instagram">Instagram</a>
         </div>
       </div>

@@ -2,8 +2,8 @@
 // Start the session at the very top
 session_start();
 
-require('admin/dbConnect.php');
-require('helperFunction/InsertRoomData.php');
+require_once('admin/dbConnect.php');
+require_once('helperFunction/InsertRoomData.php');
 
 // Initialize variables for login data
 $user_emailByLogin = "";
@@ -240,7 +240,7 @@ function get_flash($key) {
             }
         }
     </style>
-    <?php require('helperFunction/SweetAlert.php'); ?>
+    <?php require_once('helperFunction/SweetAlert.php'); ?>
 </head>
 
 <body>

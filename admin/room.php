@@ -1,5 +1,5 @@
 <?php
-include('leftSidebar.php');
+include_once('leftSidebar.php');
 
 echo'  
         <!-- Main Dashboard Content -->

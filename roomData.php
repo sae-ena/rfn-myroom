@@ -1,6 +1,6 @@
 <?php
-require('helperFunction/RoomFetchForWebsite.php');
-require('helperFunction/InsertRoomData.php');
+require_once('helperFunction/RoomFetchForWebsite.php');
+require_once('helperFunction/InsertRoomData.php');
 
 
 if (isset($_POST['room_id']) && ($_SERVER['REQUEST_METHOD'] === 'POST')) {
@@ -80,11 +80,11 @@ if (isset($_POST['room_id']) && ($_SERVER['REQUEST_METHOD'] === 'POST')) {
         $form_error = $bookingResult['message'];
     }
 }
+
 if(isset($_SESSION['auth_id']) && $_SESSION['user_type'] == "user"){
- $userID = $_SESSION['auth_id'];
+    $userID = $_SESSION['auth_id'];
     $query = "SELECT r.room_id,r.room_status,r.room_location,  r.room_name, r.room_image, b.is_active,r.room_description, r.room_price, b.booking_date, b.status, b.description, b.booking_id ,b.user_id FROM  rooms r LEFT JOIN  bookings b ON b.room_id = r.room_id AND b.user_id = '$userID'  WHERE ( r.room_status ='active') ORDER BY r.created_at DESC  LIMIT 26;";
 }else{
-    // Optimized query for guests - avoids complex JOIN
     $query = "SELECT room_id, room_status, room_name, room_location, room_image, room_description, room_price
               FROM rooms
               WHERE room_status = 'active'
@@ -147,10 +147,21 @@ if (isset($searchResult) && is_array($searchResult)) {
             }
             ?>
             <div class="room-card">
-                <?php if (((isset($_SESSION['auth_id'])) && ($_SESSION['auth_id'] == $room['user_id']) && $_SESSION['user_type'] == "user") && ($room['status'] === "pending" && $room['is_active'] == true)) : ?>
+                <?php if (
+                    isset($_SESSION['auth_id'], $room['user_id'], $room['status'], $room['is_active']) &&
+                    ($_SESSION['auth_id'] == $room['user_id']) &&
+                    $_SESSION['user_type'] == "user" &&
+                    $room['status'] === "pending" &&
+                    $room['is_active'] == true
+                ) : ?>
                     <div class="badge-status badge-booked"><strong>BOOKED</strong></div>
                 <?php endif; ?>
-                <?php if ((isset($_SESSION['auth_id']) && $_SESSION['user_type'] == "user") && ($room['status'] === "canceled" && $room['is_active'] == true)) : ?>
+                <?php if (
+                    isset($_SESSION['auth_id'], $room['status'], $room['is_active']) &&
+                    $_SESSION['user_type'] == "user" &&
+                    $room['status'] === "canceled" &&
+                    $room['is_active'] == true
+                ) : ?>
                     <div class="badge-status badge-rejected"><strong>REJECTED</strong></div>
                 <?php endif; ?>
 

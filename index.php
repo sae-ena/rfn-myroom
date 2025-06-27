@@ -3,7 +3,7 @@ if (!isset($_SESSION)) {
     session_start();
 }
 require_once('helperFunction/helpers.php');
-require('admin/dbConnect.php'); // Needed for getRoomData
+require_once('admin/dbConnect.php'); // Needed for getRoomData
 
 if (
     $_SERVER['REQUEST_METHOD'] == "GET" &&
@@ -43,7 +43,7 @@ if (
         }
     
 }
-require('header.php');
+require_once('header.php');
 
 // Get error message from URL parameter
 $errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
@@ -206,6 +206,47 @@ $errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
     </div>
 </div>
 <!-- Gallery Section End -->
+<script>
+(function() {
+    // Gallery image caching in localStorage (20 min)
+    const GALLERY_KEY = 'galleryImagesCache';
+    const GALLERY_EXPIRY = 20 * 60 * 1000; // 20 minutes
+    const galleryGrid = document.querySelector('.gallery_section .gallery-grid');
+    if (!galleryGrid) return;
+    // Helper to get image srcs from DOM
+    function getGalleryImageSrcs() {
+        return Array.from(galleryGrid.querySelectorAll('img')).map(img => img.src);
+    }
+    // Helper to render images from srcs
+    function renderGalleryImages(srcs) {
+        galleryGrid.innerHTML = '';
+        srcs.forEach(src => {
+            const div = document.createElement('div');
+            div.className = 'gallery-item';
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = 'Premium Room and Apartment Gallery - Nepal Accommodation';
+            div.appendChild(img);
+            galleryGrid.appendChild(div);
+        });
+    }
+    // Try to use cache
+    try {
+        const cached = JSON.parse(localStorage.getItem(GALLERY_KEY));
+        if (cached && Array.isArray(cached.srcs) && Date.now() - cached.time < GALLERY_EXPIRY) {
+            renderGalleryImages(cached.srcs);
+            return;
+        }
+    } catch (e) {}
+    // If not cached, cache after images load
+    window.addEventListener('load', function() {
+        const srcs = getGalleryImageSrcs();
+        if (srcs.length > 0) {
+            localStorage.setItem(GALLERY_KEY, JSON.stringify({srcs, time: Date.now()}));
+        }
+    });
+})();
+</script>
 
 <!-- SEO Content Section Start -->
 <section class="seo-content-section">
@@ -233,7 +274,7 @@ $errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
 </section>
 <!-- SEO Content Section End -->
 
-<?php require('roomData.php'); ?>
+<?php require_once('roomData.php'); ?>
 
 <?php if (isset($errorMessage)): ?>
 <script>
@@ -278,7 +319,7 @@ $errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
     }
     </style>
 </head>
-<?php require('footer.php'); ?>
+<?php require_once('footer.php'); ?>
 <!-- Single Popup Notification Container for search errors -->
 <div id="popup-notify" class="danger-notify" style="display:none;"><span id="popup-message"></span></div>
 <script>

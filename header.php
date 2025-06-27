@@ -141,15 +141,44 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
   </script>
 
   <link rel="stylesheet" href="css/style.css" />
+  <script>
+  (function() {
+    const CSS_URL = '/css/style.css';
+    const CSS_KEY = 'cachedStyleCSS';
+    const CSS_EXPIRY = 24 * 60 * 60 * 1000; // 1 day
+    function injectCSS(css) {
+      let style = document.getElementById('dynamic-style');
+      if (!style) {
+        style = document.createElement('style');
+        style.id = 'dynamic-style';
+        document.head.appendChild(style);
+      }
+      style.textContent = css;
+    }
+    try {
+      const cached = JSON.parse(localStorage.getItem(CSS_KEY));
+      if (cached && Date.now() - cached.time < CSS_EXPIRY) {
+        injectCSS(cached.css);
+      } else {
+        fetch(CSS_URL)
+          .then(r => r.text())
+          .then(css => {
+            injectCSS(css);
+            localStorage.setItem(CSS_KEY, JSON.stringify({css, time: Date.now()}));
+          });
+      }
+    } catch (e) {}
+  })();
+  </script>
 </head>
 
 <body>
   <?php
-require("helperFunction/SweetAlert.php");
+require_once("helperFunction/SweetAlert.php");
   ?>
   <nav class="navbar">
     <div class="container">
-      <a href="index.php" class="logo">Casabo Room Finder</a>
+      <a href="/" class="logo">Casabo Room Finder</a>
       <!-- Hamburger menu for mobile -->
       <div class="hamburger" id="hamburger-menu" tabindex="0" aria-label="Toggle navigation" aria-expanded="false">
         <span></span>
@@ -189,7 +218,7 @@ require("helperFunction/SweetAlert.php");
           // User is not logged in
           echo '<li><a href="login.php" class="btn">Login</a></li>';
         }
-        require('admin/dbConnect.php');
+        require_once('admin/dbConnect.php');
         ?>
       </ul>
     </div>
