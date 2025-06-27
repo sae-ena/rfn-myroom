@@ -2,7 +2,33 @@
 require "leftSidebar.php";
 require('../helperFunction/helpers.php');
 require "dbConnect.php";
+?>
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<!-- Place the first <script> tag in your HTML's <head> -->
+<script src="https://cdn.tiny.cloud/1/cckd9abl4v6grfo5d4t8yo9d26pfqvb0ds95y4of6160brqd/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 
+<!-- Place the following <script> and <textarea> tags your HTML's <body> -->
+<script>
+  tinymce.init({
+    selector: 'textarea',
+    plugins: [
+      // Core editing features
+      'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+      // Your account includes a free trial of TinyMCE premium features
+      // Try the most popular premium features until Jul 11, 2025:
+      'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
+    ],
+    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+    tinycomments_mode: 'embedded',
+    tinycomments_author: 'Author name',
+    mergetags_list: [
+      { value: 'First.Name', title: 'First Name' },
+      { value: 'Email', title: 'Email' },
+    ],
+    ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+  });
+</script>
+<?php
 // Pagination setup
 $perPage = 10;
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
@@ -32,12 +58,28 @@ function clean_message($message) {
 }
 
 // Handle Add/Edit Form Submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statusChange']) && isset($_POST['statusValue'])) {
+    $template_id = intval($_POST['statusChange']);
+    $current_status = intval($_POST['statusValue']);
+    $new_status = $current_status ? 0 : 1;
+    $sql = "UPDATE email_templates SET status=? WHERE id=?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $new_status, $template_id);
+    if ($stmt->execute()) {
+        $popupMessage = "Status updated successfully.";
+        $popupType = "success";
+    } else {
+        $popupMessage = "Failed to update status.";
+        $popupType = "error";
+    }
+    $stmt->close();
+    // Prevent further processing
+} else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $slug = trim($_POST['slug']);
     $subject_title = trim($_POST['subject_title']);
-    $user_message = trim($_POST['user_message']);
+    $user_message = $_POST['user_message']; // Save HTML as-is
     $admin_mail = trim($_POST['admin_mail']);
-    $admin_message = clean_message($_POST['admin_message']);
+    $admin_message = $_POST['admin_message']; // Save HTML as-is
     $status = isset($_POST['status']) ? intval($_POST['status']) : 1;
     $now = date('Y-m-d H:i:s');
 
@@ -49,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($subject_title === '') {
         $validationErrors[] = 'Subject Title is required.';
     }
-    if ($user_message === '') {
+    if (trim(strip_tags($user_message)) === '') {
         $validationErrors[] = 'User Message is required.';
     }
     if ($admin_mail !== '' && !filter_var($admin_mail, FILTER_VALIDATE_EMAIL)) {
@@ -77,18 +119,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $popupMessage .= '</ul>';
         $popupType = 'error';
     } else {
-        $slug = mysqli_real_escape_string($conn, $slug);
-        $subject_title = mysqli_real_escape_string($conn, $subject_title);
-        $user_message = clean_message($user_message);
-        $user_message = mysqli_real_escape_string($conn, $user_message);
-        $admin_mail = mysqli_real_escape_string($conn, $admin_mail);
-        $admin_message = mysqli_real_escape_string($conn, $admin_message);
         if (isset($_POST['template_id']) && $_POST['template_id'] !== '') {
             // Edit
             $template_id = intval($_POST['template_id']);
             $sql = "UPDATE email_templates SET subject_title=?, slug=?, user_message=?, admin_mail=?, admin_message=?, status=?,  updated_at=? WHERE id=?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssssisssi", $subject_title, $slug, $user_message, $admin_mail, $admin_message, $status, $now, $template_id);
+            $stmt->bind_param("sssssisi", $subject_title, $slug, $user_message, $admin_mail, $admin_message, $status, $now, $template_id);
             if ($stmt->execute()) {
                 $popupMessage = "Email template updated successfully.";
                 $popupType = "success";
@@ -180,6 +216,7 @@ if ($action === 'edit' && $id) {
                     <td>
                         <button onclick="showEditModal(<?= $template['id'] ?>)" class="edit-button">Edit</button>
                         <button onclick="confirmDelete(<?= $template['id'] ?>)" class="delete-button">Delete</button>
+                        <button onclick="showPreviewModal(<?= $template['id'] ?>)" class="edit-button" style="background:#2196f3;">Preview</button>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -212,19 +249,36 @@ if ($action === 'edit' && $id) {
         </div>
         <form id="templateForm" method="POST" action="emailTemplate.php">
             <input type="hidden" name="template_id" id="template_id">
-            <label>Subject Title:<br><input type="text" name="subject_title" id="subject_title" required class="input-field"></label><br>
-            <label>User Message:<br><textarea name="user_message" id="user_message" rows="6" class="input-field"></textarea></label><br>
-            <label>Admin Mail:<br><input type="email" name="admin_mail" id="admin_mail" class="input-field"></label><br><br>
-            <label>Admin Message:<br><textarea name="admin_message" id="admin_message" rows="6" class="input-field"></textarea></label><br>
-            <label>Status:<br>
+            <div class="form-group">
+                <label for="subject_title">Subject Title:</label>
+                <input type="text" name="subject_title" id="subject_title" required class="input-field">
+            </div>
+            <div class="form-group">
+                <label for="slug">Slug:</label>
+                <input type="text" name="slug" id="slug" required class="input-field">
+            </div>
+            <div class="form-group">
+                <label for="user_message">User Message:</label>
+                <textarea name="user_message" id="user_message" rows="6" class="input-field"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="admin_mail">Admin Mail:</label>
+                <input type="email" name="admin_mail" id="admin_mail" class="input-field">
+            </div>
+            <div class="form-group">
+                <label for="admin_message">Admin Message:</label>
+                <textarea name="admin_message" id="admin_message" rows="6" class="input-field"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="status">Status:</label>
                 <select name="status" id="status" class="input-field">
                     <option value="1">Active</option>
                     <option value="0">Inactive</option>
                 </select>
-            </label><br>
-           
-            <label>Slug:<br><input type="text" name="slug" id="slug" required class="input-field"></label><br><br>
-            <button type="submit" class="edit-button modern-btn">Save Template</button>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="edit-button modern-btn">Save Template</button>
+            </div>
         </form>
     </div>
 </div>
@@ -249,6 +303,15 @@ if ($action === 'edit' && $id) {
         <p><?= htmlspecialchars($popupMessage) ?></p>
     </div>
 </div>
+<!-- Preview Modal -->
+<div id="previewModal" class="modal">
+    <div class="modal-content compact-modal" style="max-width:700px;">
+        <span class="close" onclick="closePreviewModal()">&times;</span>
+        <h2 style="margin-bottom:10px;">Email Template Preview</h2>
+        <div id="previewUserMessage" style="border:1px solid #eee; padding:18px; margin-bottom:18px; background:#fafafa; border-radius:8px;"></div>
+        <div id="previewAdminMessage" style="border:1px solid #eee; padding:18px; background:#f5f5f5; border-radius:8px;"></div>
+    </div>
+</div>
 <?php if (isset($popupMessage) && $popupMessage && $popupType === 'success'): ?>
 <script>
     setTimeout(function() {
@@ -262,24 +325,24 @@ function showAddModal() {
     document.getElementById('modalTitle').innerText = 'Add Email Template';
     document.getElementById('template_id').value = '';
     document.getElementById('subject_title').value = '';
-    document.getElementById('user_message').value = '';
+    // Clear TinyMCE editors
+    if (tinymce.get('user_message')) tinymce.get('user_message').setContent('');
+    if (tinymce.get('admin_message')) tinymce.get('admin_message').setContent('');
     document.getElementById('admin_mail').value = '';
-    document.getElementById('admin_message').value = '';
     document.getElementById('status').value = '1';
     document.getElementById('slug').value = '';
     document.getElementById('templateModal').style.display = 'block';
 }
 function showEditModal(id) {
-    // Fetch template data from PHP array (rendered as JS object)
     var templates = <?php echo json_encode($templates); ?>;
     var template = templates.find(t => t.id == id);
     if (template) {
         document.getElementById('modalTitle').innerText = 'Edit Email Template';
         document.getElementById('template_id').value = template.id;
         document.getElementById('subject_title').value = template.subject_title;
-        document.getElementById('user_message').value = template.user_message;
+        if (tinymce.get('user_message')) tinymce.get('user_message').setContent(template.user_message);
+        if (tinymce.get('admin_message')) tinymce.get('admin_message').setContent(template.admin_message);
         document.getElementById('admin_mail').value = template.admin_mail;
-        document.getElementById('admin_message').value = template.admin_message;
         document.getElementById('status').value = template.status;
         document.getElementById('slug').value = template.slug;
         document.getElementById('templateModal').style.display = 'block';
@@ -301,15 +364,45 @@ function closePopupModal() {
     document.getElementById('popupModal').style.display = 'none';
     window.location.href = 'emailTemplate.php';
 }
+function showPreviewModal(id) {
+    var templates = <?php echo json_encode($templates); ?>;
+    var template = templates.find(t => t.id == id);
+    if (template) {
+        document.getElementById('previewUserMessage').innerHTML = template.user_message;
+        document.getElementById('previewAdminMessage').innerHTML = template.admin_message;
+        document.getElementById('previewModal').style.display = 'block';
+    }
+}
+function closePreviewModal() {
+    document.getElementById('previewModal').style.display = 'none';
+}
 // Close modals if clicked outside
 window.onclick = function(event) {
     var templateModal = document.getElementById('templateModal');
     var deleteModal = document.getElementById('deleteModal');
     var popupModal = document.getElementById('popupModal');
+    var previewModal = document.getElementById('previewModal');
     if (event.target == templateModal) templateModal.style.display = 'none';
     if (event.target == deleteModal) deleteModal.style.display = 'none';
     if (event.target == popupModal) popupModal.style.display = 'none';
+    if (event.target == previewModal) previewModal.style.display = 'none';
 }
+  tinymce.init({
+    selector: '#user_message',
+    setup: function (editor) {
+      editor.on('change', function () {
+        editor.save();
+      });
+    }
+  });
+  tinymce.init({
+    selector: '#admin_message',
+    setup: function (editor) {
+      editor.on('change', function () {
+        editor.save();
+      });
+    }
+  });
 </script>
 <style>
 .modal {
@@ -325,7 +418,8 @@ window.onclick = function(event) {
     margin: 5% auto;
     padding: 30px 40px;
     border: 1px solid #e0e0e0;
-    width: 70%;
+    width: 90%;
+    max-width: 800px;
     border-radius: 18px;
     box-shadow: 0px 8px 32px rgba(44,44,46,0.18), 0px 1.5px 6px rgba(0,0,0,0.08);
     position: relative;
@@ -482,7 +576,7 @@ window.onclick = function(event) {
     box-sizing: border-box;
 }
 .compact-modal {
-    max-width: 520px !important;
+    max-width: 700px !important;
     width: 99% !important;
 }
 .email-template-header {
@@ -573,5 +667,20 @@ window.onclick = function(event) {
 .add-btn-top:hover {
     background: linear-gradient(90deg, #ffb347 60%, #ff6600 100%);
     color: #222;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+}
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #333;
+}
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
 }
 </style> 

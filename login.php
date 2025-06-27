@@ -100,7 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         // Send OTP email (now using PHPMailer)
                         require_once('helperFunction/mail.php');
                         $expires_minutes = 2;
-                        list($subject, $message) = getOtpEmailForUser($conn, $user_name, $otp_code, $expires_minutes);
+                        $otp_redirect_url = "verify_otp.php?user_id=$user_id";
+                        list($subject, $message) = getOtpEmailForUser($conn, $user_name, $otp_code, $otp_redirect_url);
                         if (!sendMailPHPMailer($user_email, $subject, $message)) {
                               $conn->rollback();
                             throw new Exception("Failed to send OTP email. Please check your email address.");
@@ -108,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         // All good, commit transaction
                         $conn->commit();
                         // Redirect to OTP verification page
-                        header("Location: verify_otp.php?user_id=$user_id");
+                        header("Location: $otp_redirect_url");
                         exit();
                     } else {
                         // OTP not required, commit and log in user

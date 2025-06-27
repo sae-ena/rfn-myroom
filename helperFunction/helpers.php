@@ -96,3 +96,25 @@ function dd($data) {
     var_dump($data);
     exit;
 }
+function getBackendSettingValue($key) {
+    require("admin/dbConnect.php");
+    
+    $key = mysqli_real_escape_string($conn, $key);
+    $query = "SELECT value FROM backend_settings WHERE `name` = '$key' AND status = 1 LIMIT 1";
+    $result = mysqli_query($conn, $query);
+    
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['value'];
+    }
+    
+    return null; // Return null if the key does not exist
+}
+
+function getBaseUrl() {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'];
+    $script = $_SERVER['SCRIPT_NAME'];
+    $path = str_replace(basename($script), '', $script);
+    return $protocol . $host . $path;
+}

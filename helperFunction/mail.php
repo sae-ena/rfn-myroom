@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/helpers.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -21,13 +22,17 @@ function renderEmailTemplate($template, $vars) {
  * @param string $name
  * @param string $otp
  * @param int $expires (minutes)
+ * @param string $redirectUrl
  * @return array [subject, message]
  */
-function getOtpEmailForUser($conn, $name, $otp, $expires) {
-    $sql = "SELECT subject_title, user_message FROM email_templates WHERE slug = 'customer-signup-otp';";
+function getOtpEmailForUser($conn, $name, $otp, $redirectUrl = '') {
+   $appName =  getBackendSettingValue('app-name'); // Ensure this is called to set up the environment
+   $baseUrl = getBaseUrl(); // Get the base URL for the app
+   $redirectUrl = $baseUrl . $redirectUrl; // Ensure redirect URL is absolute 
+   $sql = "SELECT subject_title, user_message FROM email_templates WHERE slug = 'customer-signup-otp';";
     $res = $conn->query($sql);
     if ($res && $row = $res->fetch_assoc()) {
-        $message = renderEmailTemplate($row['user_message'], ['user_name'=>$name, 'otp'=>$otp]);    
+        $message = renderEmailTemplate($row['user_message'], ['user_name'=>$name, 'otp'=>$otp , 'app_name'=>$appName, 'redirect_url'=>$redirectUrl]);    
         return [$row['subject_title'], $message];
     }
     return ['', '']; // Return empty if no template found
