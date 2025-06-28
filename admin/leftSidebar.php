@@ -2,6 +2,21 @@
 
 require_once "../helperFunction/CheckLogin.php";
 CheckLogin::islogin();
+require_once __DIR__ . '/dbConnect.php';
+
+// --- Sidebar Flicker Fix: Set sidebar state before rendering HTML ---
+echo '<script>
+(function() {
+  try {
+    var sidebarState = localStorage.getItem("sidebarCollapsed");
+    if (sidebarState === "true") {
+      document.write("<body class=\'sidebar-collapsed\'>");
+    } else {
+      document.write("<body>");
+    }
+  } catch (e) { document.write("<body>"); }
+})();
+</script>';
 
 if(stripos($_SERVER['SCRIPT_NAME'], "/dynaform") !== false){
     echo'<!DOCTYPE html>
@@ -63,8 +78,56 @@ echo'<body>
         </nav>
         </div>';
 
-?>
+// --- Popup Notification Component (Reliable, like login.php) ---
+if (session_status() === PHP_SESSION_NONE) session_start();
+$popupMessage = $_SESSION['popup_message'] ?? '';
+$popupType = $_SESSION['popup_type'] ?? '';
+unset($_SESSION['popup_message'], $_SESSION['popup_type']);
+if ($popupMessage): ?>
+  <div class="popup-notify <?= $popupType === 'success' ? 'success' : 'danger' ?>" id="flash-popup" style="display:block;">
+    <div class="popup-content">
+      <span><?= htmlspecialchars($popupMessage) ?></span>
+      <button class="popup-close" id="popup-close-btn">&times;</button>
+    </div>
+  </div>
+  <script>
+    (function() {
+      var popup = document.getElementById('flash-popup');
+      var closeBtn = document.getElementById('popup-close-btn');
+      function closePopup() {
+        if (popup) {
+          popup.style.opacity = '0';
+          setTimeout(function() { if (popup) popup.remove(); }, 300);
+        }
+      }
+      if (popup) {
+        popup.style.display = 'block';
+        setTimeout(closePopup, 5000); // Auto-hide after 5 seconds
+      }
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closePopup);
+      }
+    })();
+  </script>
+<?php endif; ?>
 <script>
+function closePopup() {
+  var popup = document.getElementById('flash-popup');
+  if (popup) {
+    popup.style.opacity = '0';
+    setTimeout(function() { popup.style.display = 'none'; }, 300);
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var popup = document.getElementById('flash-popup');
+  if (popup) {
+    popup.style.display = 'block';
+    setTimeout(function() {
+      closePopup();
+    }, 3500);
+  }
+});
+
 let btn = document.getElementById("logoutBtn");
 btn.onclick = function(event) {
     

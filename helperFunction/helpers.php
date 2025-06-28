@@ -16,7 +16,7 @@ function convertToNullIfEmpty($input) {
 
 function getRoomData($roomType, $location = "") {
     if ($location == "" && $roomType == "") return false;
-    require("admin/dbConnect.php");
+    global $conn;
 
     // Sanitize inputs
     $location = trim($location);
@@ -64,7 +64,7 @@ function getRoomData($roomType, $location = "") {
 }
 
 function getAvailableSearchOptions() {
-    require("admin/dbConnect.php");
+    global $conn;
     
     $options = [
         'locations' => [],
@@ -97,7 +97,7 @@ function dd($data) {
     exit;
 }
 function getBackendSettingValue($key) {
-    require("admin/dbConnect.php");
+    global $conn;
     
     $key = mysqli_real_escape_string($conn, $key);
     $query = "SELECT value FROM backend_settings WHERE `name` = '$key' AND status = 1 LIMIT 1";

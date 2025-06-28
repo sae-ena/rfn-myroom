@@ -1,6 +1,6 @@
 <?php
-require_once('helperFunction/RoomFetchForWebsite.php');
-require_once('helperFunction/InsertRoomData.php');
+require_once(__DIR__ . '/helperFunction/RoomFetchForWebsite.php');
+require_once(__DIR__ . '/helperFunction/InsertRoomData.php');
 
 
 if (isset($_POST['room_id']) && ($_SERVER['REQUEST_METHOD'] === 'POST')) {
@@ -56,6 +56,7 @@ if (isset($_POST['room_id']) && ($_SERVER['REQUEST_METHOD'] === 'POST')) {
     // ...existing code for cash on hand booking...
     // Add payment_method, customer_name, customer_email, customer_number, room_price to booking insert/update
     $query = "SELECT * FROM bookings WHERE user_id = '$auth_id' AND room_id = '$room_id' AND is_active = 1 ;";
+    // Ensure RoomFetchForWebsite class is loaded and available
     $bookingResult = RoomFetchForWebsite::fetchBookingData($query);
     if ($bookingResult == "No Booking Found") {
         $check_query = "SELECT * FROM bookings WHERE user_id = '$auth_id' AND room_id = '$room_id' AND is_active = 0 ";
@@ -70,8 +71,13 @@ if (isset($_POST['room_id']) && ($_SERVER['REQUEST_METHOD'] === 'POST')) {
             $query = "INSERT INTO bookings (user_id, room_id, description, booking_date, payment_method, customer_name, customer_email, customer_number, room_price) VALUES ('$auth_id', '$room_id','$remarks', '$time', '$payment_method', '$customer_name', '$customer_email', '$customer_number', '$room_price')";
         }
         $bookingResult1 = InsertRoomData::insertData($query);
-        if (strpos($_SERVER['HTTP_REFERER'], 'booking_details.php?booking_id=') !== false) {
-            echo '<script type="text/javascript">\nlocalStorage.setItem("showModalRoomAdded", "true");\nwindow.location.href = "' . $_SERVER['HTTP_REFERER'] . '";\n</script>';
+        // Debug: log the referer
+        error_log('HTTP_REFERER: ' . ($_SERVER['HTTP_REFERER'] ?? 'NOT SET'));
+        if (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'booking_details.php?booking_id=') !== false) {
+            echo '<!DOCTYPE html><html><head><script type="text/javascript">
+            localStorage.setItem("showModalRoomAdded", "true");
+            window.location.href = "' . htmlspecialchars($_SERVER['HTTP_REFERER'], ENT_QUOTES) . '";
+            </script></head><body></body></html>';
             exit();
         }
         $successfullyRoomAdded = $bookingResult1;

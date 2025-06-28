@@ -1,6 +1,7 @@
 <?php
 session_start();
-require('dbConnect.php');
+require_once('admin/dbConnect.php');
+require_once('helperFunction/InsertRoomData.php');
 // Initialize variables for login data
 $user_emailByLogin = "";
 $user_passwordByLogin = "";
@@ -197,8 +198,7 @@ function getUserIP()
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Sign Up & Login</title>
     <link rel="stylesheet" href="login.css">
-    <?php 
-require('../helperFunction/SweetAlert.php'); ?>
+    <?php require_once('helperFunction/SweetAlert.php'); ?>
 </head>
 
 <body>
@@ -398,7 +398,7 @@ else{
             }
             gotoSignup();
         <?php endif; ?>
-        // Ensure flash popups are visible for 5 seconds
+        // Ensure flash popups are visible for 4 seconds
         window.addEventListener('DOMContentLoaded', function() {
             const danger = document.getElementById('flash-danger');
             const success = document.getElementById('flash-success');
@@ -408,7 +408,7 @@ else{
                     setTimeout(function() {
                         el.style.opacity = '0';
                         setTimeout(function() { el.remove(); }, 1000);
-                    }, 5000);
+                    }, 4000);
                 }
             });
         });
