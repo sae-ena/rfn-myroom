@@ -1,5 +1,5 @@
 <?php
-require "leftSidebar.php";
+require_once "leftSidebar.php";
 require "dbConnect.php";
 // Payment & Booking History for Admin
 // Build filter query

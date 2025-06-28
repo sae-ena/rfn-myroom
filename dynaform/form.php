@@ -1,6 +1,6 @@
 <?php
 
-require "../admin/leftSidebar.php";
+require_once "../admin/leftSidebar.php";
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['formid'])) {
 

@@ -1,7 +1,7 @@
 <?php
 require "dbConnect.php";
 session_start();
-require "leftSidebar.php";
+require_once "leftSidebar.php";
 
 // Fetch the backend-setting form definition (fetch once)
 $formQuery = "SELECT * FROM form_managers WHERE form_slug = ? AND status = 1 LIMIT 1";

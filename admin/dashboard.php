@@ -1,6 +1,6 @@
 <?php
-require "leftSidebar.php";
-require "dbConnect.php";  // Make sure this file contains the correct database connection
+require_once "leftSidebar.php";
+require_once "dbConnect.php";  // Make sure this file contains the correct database connection
 
 // Fetch data from the ROOMS table
 $query = "SELECT *,(SELECT COUNT(*) FROM rooms WHERE room_status = 'active') AS activeCount FROM rooms ";

@@ -1,5 +1,5 @@
 <?php
-require "leftSidebar.php";
+require_once "leftSidebar.php";
 require "dbConnect.php";  
 
 $query = "SELECT * from form_managers ;";

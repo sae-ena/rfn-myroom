@@ -1,5 +1,5 @@
 <?php
-require "leftSidebar.php";
+require_once "leftSidebar.php";
 require "dbConnect.php";  
 
 // Get the filter value from the dropdown (Active or Inactive)

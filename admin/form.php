@@ -1,5 +1,5 @@
 <?php
-require "leftSidebar.php";
+require_once "leftSidebar.php";
 require('../helperFunction/helpers.php');
 require "dbConnect.php";
 $formTitle ="Add New Room Listing";

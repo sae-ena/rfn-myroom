@@ -1,5 +1,5 @@
 <?php
-require "../admin/leftSidebar.php";
+require_once "../admin/leftSidebar.php";
 include '../admin/dbConnect.php';
 
 if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['formId'])) {
@@ -82,8 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['formId'])) {
     position: relative; /* Positioning to center it */
     top: 60px;
     left: 50%; /* Move to the middle horizontally */
-    transform: translate(-50%, -50%); /* Offset by half of the element’s width and height to truly center it */
-    box-sizing: border-box; /* Ensures the padding doesn’t affect the overall width */
+    transform: translate(-50%, -50%); /* Offset by half of the element's width and height to truly center it */
+    box-sizing: border-box; /* Ensures the padding doesn't affect the overall width */
 }
 .close {
     background-color: rgba(255, 255, 255, 0.8); 

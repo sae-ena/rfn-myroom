@@ -1,5 +1,5 @@
 <?php
-require "leftSidebar.php";
+require_once "leftSidebar.php";
 require "dbConnect.php";
 // Fetch data from the ROOMS table
 $query = "SELECT DISTINCT r.*

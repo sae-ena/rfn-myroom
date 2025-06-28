@@ -1,6 +1,6 @@
 <?php
 
-include('leftSidebar.php');
+include_once('leftSidebar.php');
 
 echo'<!-- Content Area -->
 <div class="content-area">

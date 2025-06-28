@@ -1,5 +1,5 @@
 <?php
-require "leftSidebar.php";
+require_once "leftSidebar.php";
 require "dbConnect.php";  
 require('../helperFunction/InsertRoomData.php');
 require('../helperFunction/RoomFetchForWebsite.php');
