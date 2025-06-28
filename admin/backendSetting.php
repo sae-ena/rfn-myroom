@@ -46,9 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->query("DELETE FROM backend_settings");
     // Insert new settings
     $stmt = $conn->prepare("INSERT INTO backend_settings (name, value, status) VALUES (?, ?, 1)");
+
+
     foreach ($values as $name => $value) {
         $stmt->bind_param("ss", $name, $value);
         $stmt->execute();
+        
     }
     $stmt->close();
     $form_success = "Backend settings saved successfully!";
@@ -57,7 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <div class="dashboard-content">
-    <h1 class="roomH1" style="color:white">Backend Setting</h1>
     <?php if (isset($form_error) && $form_error): ?>
         <div class="danger-notify"><?php echo $form_error; ?></div>
     <?php endif; ?>
@@ -95,6 +97,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($required) echo '<span style="color:red;margin-left:5px;">*</span>';
                 echo '</label>';
                 echo '</div>';
+            } else if ($type === 'color') {
+                // Color picker with preview box
+                echo '<div style="display:flex;align-items:center;margin-bottom:18px;gap:12px;">';
+                echo '<label for="' . htmlspecialchars($name) . '" style="font-weight:600;margin:0 10px 0 0;">' . htmlspecialchars($label);
+                if ($required) echo '<span style="color:red;margin-left:5px;">*</span>';
+                echo '</label>';
+                echo '<input type="color" name="' . htmlspecialchars($name) . '" id="' . htmlspecialchars($name) . '" value="' . $value . '" ' . ($required ? 'required' : '') . ' style="width:40px;height:40px;border:none;cursor:pointer;">';
+                 echo '</div>';
+                // JS to update preview on color change
+                
             } else {
                 echo '<label for="' . htmlspecialchars($name) . '" style="font-weight:600;">' . htmlspecialchars($label);
                 if ($required) echo '<span style="color:red;margin-left:5px;">*</span>';

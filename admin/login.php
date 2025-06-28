@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once('admin/dbConnect.php');
-require_once('helperFunction/InsertRoomData.php');
+require_once('dbConnect.php');
+require_once('../helperFunction/InsertRoomData.php');
 // Initialize variables for login data
 $user_emailByLogin = "";
 $user_passwordByLogin = "";
@@ -198,7 +198,7 @@ function getUserIP()
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Sign Up & Login</title>
     <link rel="stylesheet" href="login.css">
-    <?php require_once('helperFunction/SweetAlert.php'); ?>
+    <?php require_once('../helperFunction/SweetAlert.php'); ?>
 </head>
 
 <body>
