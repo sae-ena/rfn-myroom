@@ -14,27 +14,32 @@ class RoomFetchForWebsite
             }
 
             if (self::$conn === null) {
-                die("Error: Database connection not established.");
+                // Return null instead of dying to allow graceful error handling
+                return false;
             }
         }
+        return true;
     }
     public static function fetchRoomData($query)
     {
-    
-        self::initializeConnection();
+        if (!self::initializeConnection()) {
+            // Return empty array if database connection fails
+            return [];
+        }
        
         $result = self::$conn->query($query);
-        if ($result->num_rows > 0) {
+        if ($result && $result->num_rows > 0) {
             $totalRooms = $result->num_rows;
             $rooms = [];
             while ($row = $result->fetch_assoc()) {
                 $rooms[] = $row;
             }
             if(empty($rooms)){
-                return "No Room Found";
+                return [];
             }
             return $rooms;
         }
+        return [];
     }
     public static function fetchBookingData($query)
     {

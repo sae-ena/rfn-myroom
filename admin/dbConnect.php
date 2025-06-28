@@ -5,15 +5,27 @@
     $password = "AVNS_1N9Dr_M5lJZIRxcd8gj"; 
     $dbname = "rf_db"; 
 
-
-    $conn = new mysqli($host, $username, $password, $dbname, $port);
-
-// Create a connection
-
-// Check the connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-} 
-
-return $conn;
+    // Suppress error reporting for database connection
+    error_reporting(0);
+    
+    try {
+        $conn = new mysqli($host, $username, $password, $dbname, $port);
+        
+        // Check the connection
+        if ($conn->connect_error) {
+            // Log error internally but don't expose details to user
+            error_log("Database connection failed: " . $conn->connect_error);
+            return null;
+        }
+        
+        // Re-enable error reporting after successful connection
+        error_reporting(E_ALL);
+        return $conn;
+        
+    } catch (Exception $e) {
+        // Log error internally but don't expose details to user
+        error_log("Database connection exception: " . $e->getMessage());
+        error_reporting(E_ALL);
+       die();
+    }
 ?>
