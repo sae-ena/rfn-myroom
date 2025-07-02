@@ -193,11 +193,6 @@ if (isset($_GET['section']) && $_GET['section'] === 'email_templates') {
         <!-- List templates here (scaffold) -->
         </tbody>
     </table>
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    <script>
-      tinymce.init({ selector:'#user_message', menubar:false, plugins:'code', toolbar:'undo redo | bold italic underline | code', height:200 });
-      tinymce.init({ selector:'#admin_message', menubar:false, plugins:'code', toolbar:'undo redo | bold italic underline | code', height:200 });
-    </script>
     <?php
     exit;
 }

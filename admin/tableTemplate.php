@@ -6,13 +6,23 @@ $tableDataTextColor = getBackendSettingValue('table-data-text-color') ?: '#333';
 <div class="admin-table-card">
   <div class="admin-table-header">
     <h2 class="admin-table-title"><?= htmlspecialchars($tableTitle ?? 'Table Title') ?></h2>
-    <div class="admin-table-add-row">
-      <a href="<?= htmlspecialchars($addUrl ?? '#') ?>" class="admin-btn admin-btn-add">+ Add</a>
-    </div>
+    <?php if (!empty($addUrl)): ?>
+      <div class="admin-table-add-row">
+        <a href="<?= htmlspecialchars($addUrl) ?>" class="admin-btn admin-btn-add">+ Add</a>
+      </div>
+    <?php endif; ?>
     <div class="admin-table-actions-row">
       <div class="admin-table-actions-left">
         <form method="GET" class="admin-table-search-form" id="filterForm">
-          <input type="text" id="titleSearch" name="title" placeholder="Search by Title ,ID ,Location" value="<?= htmlspecialchars($searchQuery ?? '') ?>" />
+          <input type="text" id="titleSearch" name="title" placeholder="<?= htmlspecialchars($searchPlaceholder ?? ($searchQuery ?? 'Search...')) ?>" value="<?= htmlspecialchars($searchQuery ?? '') ?>" />
+          <?php
+          // Render custom filters if provided
+          if (isset($customFilters) && is_array($customFilters)) {
+              foreach ($customFilters as $filterHtml) {
+                  echo $filterHtml;
+              }
+          }
+          ?>
           <select name="status" id="status" onchange="this.form.submit()" class="admin-table-status-filter">
             <option value="">All Status</option>
             <option value="active" <?= (isset($_GET['status']) && $_GET['status'] === 'active') ? 'selected' : '' ?>>Active</option>
@@ -21,13 +31,15 @@ $tableDataTextColor = getBackendSettingValue('table-data-text-color') ?: '#333';
           <button type="submit" class="admin-btn admin-btn-search">🔍</button>
         </form>
       </div>
+      <?php $showBulkActions = isset($showBulkActions) ? $showBulkActions : true; ?>
+      <?php if ($showBulkActions): ?>
       <div class="admin-table-actions-right">
         <button type="button" class="admin-btn admin-btn-refresh" title="Refresh" onclick="window.location.href=window.location.pathname">&#x21bb;</button>
         <button type="button" class="admin-btn admin-btn-active" onclick="submitBulkAction('activate')">Active</button>
         <button type="button" class="admin-btn admin-btn-inactive" onclick="submitBulkAction('inactivate')">Inactive</button>
         <button type="button" class="admin-btn admin-btn-delete" onclick="submitBulkAction('delete')">🗑 Delete</button>
-        <!-- Future: <button class="admin-btn">Export</button> <button class="admin-btn">Import</button> -->
       </div>
+      <?php endif; ?>
     </div>
   </div>
   
@@ -37,7 +49,9 @@ $tableDataTextColor = getBackendSettingValue('table-data-text-color') ?: '#333';
       <table class="admin-table">
         <thead>
           <tr>
-            <th><input type="checkbox" onclick="toggleAllCheckboxes(this)"></th>
+            <?php if ($showBulkActions): ?>
+              <th><input type="checkbox" onclick="toggleAllCheckboxes(this)"></th>
+            <?php endif; ?>
             <?php foreach (($tableHeaders ?? []) as $header): ?>
               <th><?= htmlspecialchars($header) ?></th>
             <?php endforeach; ?>
@@ -46,16 +60,11 @@ $tableDataTextColor = getBackendSettingValue('table-data-text-color') ?: '#333';
         <tbody>
           <?php foreach (($tableRows ?? []) as $row): ?>
             <tr>
-              <td><input type="checkbox" name="delete_ids[]" value="<?= htmlspecialchars($row['id'] ?? '') ?>"></td>
+              <?php if ($showBulkActions): ?>
+                <td><input type="checkbox" name="delete_ids[]" value="<?= htmlspecialchars($row['id'] ?? '') ?>"></td>
+              <?php endif; ?>
               <?php foreach ($row as $key => $value): if ($key === 'id') continue; ?>
-                <?php if ($key === 'status'): ?>
-                  <td>
-                    <!-- Per-row status toggle form OUTSIDE the bulk form -->
-                    <form method="POST" style="display:inline;" onsubmit="event.stopPropagation();">
-                      <?= $value ?>
-                    </form>
-                  </td>
-                <?php elseif ($key === 'action'): ?>
+                <?php if (in_array(strtolower($key), ['status', 'action', 'room_image', 'payment_status'])): ?>
                   <td><?= $value ?></td>
                 <?php else: ?>
                   <td><?= htmlspecialchars($value) ?></td>
@@ -83,8 +92,8 @@ $tableDataTextColor = getBackendSettingValue('table-data-text-color') ?: '#333';
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.07);
   padding: 24px 18px 18px 18px;
-  margin: 32px auto;
-  max-width: 98vw;
+  margin: 16px 8px 16px 8px;
+  max-width: 100%;
 }
 .admin-table-header {
   display: flex;

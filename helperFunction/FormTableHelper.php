@@ -28,4 +28,82 @@ class FormTableHelper {
         $sql = "UPDATE `$table` SET deleted_at=NOW() WHERE `$column` IN ($idList)";
         return $conn->query($sql);
     }
+
+    // Reusable search function: search across multiple columns in any table
+    public static function searchData($table, $searchColumns, $searchWord, $additionalConditions = '', $orderBy = '') {
+        global $conn;
+        
+        if (empty($table) || empty($searchColumns) || empty($searchWord)) {
+            return false;
+        }
+
+        // Build search conditions for multiple columns
+        $searchConditions = [];
+        foreach ($searchColumns as $column) {
+            $searchConditions[] = "`$column` LIKE '%" . $conn->real_escape_string($searchWord) . "%'";
+        }
+        
+        $searchClause = implode(' OR ', $searchConditions);
+        
+        // Build the complete query
+        $sql = "SELECT * FROM `$table` WHERE ($searchClause)";
+        
+        // Add additional conditions if provided
+        if (!empty($additionalConditions)) {
+            $sql .= " AND ($additionalConditions)";
+        }
+        
+        // Add order by if provided
+        if (!empty($orderBy)) {
+            $sql .= " ORDER BY $orderBy";
+        }
+        
+        $result = $conn->query($sql);
+        
+        if (!$result) {
+            return false;
+        }
+        
+        // Return data as array
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+        
+        return $data;
+    }
+
+    // Get total count for search results (useful for pagination or showing "no results found")
+    public static function getSearchCount($table, $searchColumns, $searchWord, $additionalConditions = '') {
+        global $conn;
+        
+        if (empty($table) || empty($searchColumns) || empty($searchWord)) {
+            return 0;
+        }
+
+        // Build search conditions for multiple columns
+        $searchConditions = [];
+        foreach ($searchColumns as $column) {
+            $searchConditions[] = "`$column` LIKE '%" . $conn->real_escape_string($searchWord) . "%'";
+        }
+        
+        $searchClause = implode(' OR ', $searchConditions);
+        
+        // Build the complete query
+        $sql = "SELECT COUNT(*) as total FROM `$table` WHERE ($searchClause)";
+        
+        // Add additional conditions if provided
+        if (!empty($additionalConditions)) {
+            $sql .= " AND ($additionalConditions)";
+        }
+        
+        $result = $conn->query($sql);
+        
+        if (!$result) {
+            return 0;
+        }
+        
+        $row = $result->fetch_assoc();
+        return (int)$row['total'];
+    }
 } 

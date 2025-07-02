@@ -1,63 +1,46 @@
+<!DOCTYPE html>
 <?php
-require_once "leftSidebar.php";
+session_start();
+// Handle all POST actions and redirects FIRST
 require('../helperFunction/helpers.php');
 require "dbConnect.php";
 ?>
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<head>
+<link rel="icon" href="data:,">
+<!-- <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script> -->
 <!-- Place the first <script> tag in your HTML's <head> -->
 <script src="https://cdn.tiny.cloud/1/cckd9abl4v6grfo5d4t8yo9d26pfqvb0ds95y4of6160brqd/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
-
-<!-- Place the following <script> and <textarea> tags your HTML's <body> -->
-<script>
-  tinymce.init({
-    selector: 'textarea',
-    plugins: [
-      // Core editing features
-      'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-      // Your account includes a free trial of TinyMCE premium features
-      // Try the most popular premium features until Jul 11, 2025:
-      'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
-    ],
-    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-    tinycomments_mode: 'embedded',
-    tinycomments_author: 'Author name',
-    mergetags_list: [
-      { value: 'First.Name', title: 'First Name' },
-      { value: 'Email', title: 'Email' },
-    ],
-    ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
-  });
-</script>
+</head>
 <?php
-// Pagination setup
-$perPage = 10;
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
-$offset = ($page - 1) * $perPage;
-
-// Count total templates
-$totalSql = "SELECT COUNT(*) as total FROM email_templates";
-$totalResult = $conn->query($totalSql);
-$totalTemplates = $totalResult ? (int)$totalResult->fetch_assoc()['total'] : 0;
-$totalPages = ceil($totalTemplates / $perPage);
-
-// Handle Add/Edit/Delete actions
-$action = $_GET['action'] ?? '';
-$id = isset($_GET['id']) ? intval($_GET['id']) : null;
-$popupMessage = '';
-$popupType = '';
-
-// Function to clean up message content
-function clean_message($message) {
-    // Normalize all line endings to \n
-    $message = str_replace(["\r\n", "\r"], "\n", $message);
-    // Remove multiple consecutive blank lines (more than 2 newlines)
-    $message = preg_replace("/\n{3,}/", "\n\n", $message);
-    // Trim leading/trailing whitespace and newlines
-    $message = trim($message);
-    return $message;
+// Bulk actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_action']) && isset($_POST['delete_ids'])) {
+    $ids = array_map('intval', $_POST['delete_ids']);
+    $action = $_POST['bulk_action'];
+    $success = false;
+    $msg = '';
+    if ($action === 'activate') {
+        $in = implode(',', $ids);
+        $sql = "UPDATE email_templates SET status=1 WHERE id IN ($in)";
+        $success = $conn->query($sql);
+        $msg = $success ? 'Selected templates activated successfully.' : 'Failed to activate selected templates.';
+    } elseif ($action === 'inactivate') {
+        $in = implode(',', $ids);
+        $sql = "UPDATE email_templates SET status=0 WHERE id IN ($in)";
+        $success = $conn->query($sql);
+        $msg = $success ? 'Selected templates inactivated successfully.' : 'Failed to inactivate selected templates.';
+    } elseif ($action === 'delete') {
+        $in = implode(',', $ids);
+        $sql = "DELETE FROM email_templates WHERE id IN ($in)";
+        $success = $conn->query($sql);
+        $msg = $success ? 'Selected templates deleted successfully.' : 'Failed to delete selected templates.';
+    }
+    $_SESSION['popupMessage'] = $msg;
+    $_SESSION['popupType'] = $success ? 'success' : 'error';
+    header('Location: ' . $_SERVER['REQUEST_URI']);
+    exit;
 }
 
-// Handle Add/Edit Form Submission
+// Handle Add/Edit Form Submission (status toggle)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statusChange']) && isset($_POST['statusValue'])) {
     $template_id = intval($_POST['statusChange']);
     $current_status = intval($_POST['statusValue']);
@@ -66,15 +49,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statusChange']) && is
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $new_status, $template_id);
     if ($stmt->execute()) {
-        $popupMessage = "Status updated successfully.";
-        $popupType = "success";
+        $_SESSION['popupMessage'] = "Status updated successfully.";
+        $_SESSION['popupType'] = "success";
     } else {
-        $popupMessage = "Failed to update status.";
-        $popupType = "error";
+        $_SESSION['popupMessage'] = "Failed to update status.";
+        $_SESSION['popupType'] = "error";
     }
     $stmt->close();
-    // Prevent further processing
-} else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Location: ' . $_SERVER['REQUEST_URI']);
+    exit;
+}
+
+// Handle Add/Edit Form Submission (add/edit template)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subject_title']) && isset($_POST['slug'])) {
     $slug = trim($_POST['slug']);
     $subject_title = trim($_POST['subject_title']);
     $user_message = $_POST['user_message']; // Save HTML as-is
@@ -112,12 +99,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statusChange']) && is
     }
 
     if (!empty($validationErrors)) {
-        $popupMessage = '<ul style="margin:0 0 0 18px;padding:0 0 0 10px;">';
+        $_SESSION['popupMessage'] = '<ul style="margin:0 0 0 18px;padding:0 0 0 10px;">';
         foreach ($validationErrors as $err) {
-            $popupMessage .= '<li style="color:#b71c1c;font-size:1.05em;line-height:1.7;">' . htmlspecialchars($err) . '</li>';
+            $_SESSION['popupMessage'] .= '<li style="color:#b71c1c;font-size:1.05em;line-height:1.7;">' . htmlspecialchars($err) . '</li>';
         }
-        $popupMessage .= '</ul>';
-        $popupType = 'error';
+        $_SESSION['popupMessage'] .= '</ul>';
+        $_SESSION['popupType'] = 'error';
     } else {
         if (isset($_POST['template_id']) && $_POST['template_id'] !== '') {
             // Edit
@@ -126,11 +113,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statusChange']) && is
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("sssssisi", $subject_title, $slug, $user_message, $admin_mail, $admin_message, $status, $now, $template_id);
             if ($stmt->execute()) {
-                $popupMessage = "Email template updated successfully.";
-                $popupType = "success";
+                $_SESSION['popupMessage'] = "Email template updated successfully.";
+                $_SESSION['popupType'] = "success";
             } else {
-                $popupMessage = "Failed to update email template.";
-                $popupType = "error";
+                $_SESSION['popupMessage'] = "Failed to update email template.";
+                $_SESSION['popupType'] = "error";
             }
             $stmt->close();
         } else {
@@ -139,35 +126,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statusChange']) && is
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ssssissss", $subject_title, $slug, $user_message, $admin_mail, $admin_message, $status, $now, $now);
             if ($stmt->execute()) {
-                $popupMessage = "Email template added successfully.";
-                $popupType = "success";
+                $_SESSION['popupMessage'] = "Email template added successfully.";
+                $_SESSION['popupType'] = "success";
             } else {
-                $popupMessage = "Failed to add email template.";
-                $popupType = "error";
+                $_SESSION['popupMessage'] = "Failed to add email template.";
+                $_SESSION['popupType'] = "error";
             }
             $stmt->close();
         }
+        header('Location: ' . $_SERVER['REQUEST_URI']);
+        exit;
     }
 }
 
 // Handle Delete
+$action = $_GET['action'] ?? '';
+$id = isset($_GET['id']) ? intval($_GET['id']) : null;
 if ($action === 'delete' && $id) {
     $sql = "DELETE FROM email_templates WHERE id=?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id);
     if ($stmt->execute()) {
-        $popupMessage = "Email template deleted successfully.";
-        $popupType = "success";
+        $_SESSION['popupMessage'] = "Email template deleted successfully.";
+        $_SESSION['popupType'] = "success";
     } else {
-        $popupMessage = "Failed to delete email template.";
-        $popupType = "error";
+        $_SESSION['popupMessage'] = "Failed to delete email template.";
+        $_SESSION['popupType'] = "error";
     }
     $stmt->close();
+    header('Location: ' . $_SERVER['REQUEST_URI']);
+    exit;
 }
 
-// Fetch paginated templates
+// Get popup message from session and clear it
+$popupMessage = $_SESSION['popupMessage'] ?? '';
+$popupType = $_SESSION['popupType'] ?? '';
+unset($_SESSION['popupMessage'], $_SESSION['popupType']);
+
+// Now include files that output HTML
+require_once "leftSidebar.php";
+
+// Pagination setup
+$perPage = 10;
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
+$offset = ($page - 1) * $perPage;
+
+// Search logic
+$search = $_GET['title'] ?? '';
+$search = convertToNullIfEmpty($search);
+$where = [];
+if ($search) {
+    $searchEsc = $conn->real_escape_string($search);
+    $where[] = "(subject_title LIKE '%$searchEsc%' OR slug LIKE '%$searchEsc%')";
+}
+// Add status filter logic
+$status = isset($_GET['status']) ? $_GET['status'] : '';
+if ($status !== '') {
+    if ($status === 'active') {
+        $where[] = "status = 1";
+    } elseif ($status === 'inActive') {
+        $where[] = "status = 0";
+    }
+}
+$whereSql = count($where) ? ('WHERE ' . implode(' AND ', $where)) : '';
+
+// Count total templates (with search)
+$totalSql = "SELECT COUNT(*) as total FROM email_templates $whereSql";
+$totalResult = $conn->query($totalSql);
+$totalTemplates = $totalResult ? (int)$totalResult->fetch_assoc()['total'] : 0;
+$totalPages = ceil($totalTemplates / $perPage);
+
+// Fetch paginated templates (with search)
 $templates = [];
-$sql = "SELECT * FROM email_templates ORDER BY created_at DESC LIMIT $perPage OFFSET $offset";
+$sql = "SELECT * FROM email_templates $whereSql ORDER BY created_at DESC LIMIT $perPage OFFSET $offset";
 $result = $conn->query($sql);
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -187,41 +218,59 @@ if ($action === 'edit' && $id) {
     }
     $stmt->close();
 }
+
+// Prepare data for the modular table template
+$tableTitle = 'Email Template Manager';
+$addUrl = '#';
+$showBulkActions = true;
+$searchQuery = $_GET['title'] ?? '';
+$searchPlaceholder = 'Search by Subject, Slug';
+$tableHeaders = ['S.N', 'Subject', 'Slug', 'Status', 'Actions'];
+$tableRows = [];
+$key = 0;
+foreach ($templates as $template) {
+    $isActive = $template['status'] == 1;
+    $statusSwitch = '<form method="POST" style="display:inline;" onsubmit="event.stopPropagation();">'
+        . '<input type="hidden" name="statusChange" value="' . $template['id'] . '">' 
+        . '<input type="hidden" name="statusValue" value="' . $template['status'] . '">' 
+        . '<label class="switch ' . ($isActive ? 'switch-active' : 'switch-inactive') . '">' 
+        . '<input type="checkbox" name="toggleStatus" onchange="this.form.submit()" ' . ($isActive ? 'checked' : '') . '>'
+        . '<span class="slider round"></span>'
+        . '</label>'
+        . '</form>';
+    $actions =
+        '<button type="button" onclick="event.stopPropagation(); showEditModal(' . $template['id'] . ')" class="edit-button">Edit</button>'
+        . '<button type="button" onclick="event.stopPropagation(); confirmDelete(' . $template['id'] . ')" class="delete-button">Delete</button>'
+        . '<button type="button" onclick="event.stopPropagation(); showPreviewModal(' . $template['id'] . ')" class="view-button" title="Preview">'
+        . '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="vertical-align:middle;">'
+        . '<path stroke-width="2" d="M1.5 12s3.5-7 10.5-7 10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z"/>'
+        . '<circle cx="12" cy="12" r="3.5" stroke-width="2"/>'
+        . '</svg>'
+        . '</button>';
+    $tableRows[] = [
+        'sn' => ++$key,
+        'subject_title' => htmlspecialchars($template['subject_title'] ?? ''),
+        'slug' => htmlspecialchars($template['slug'] ?? ''),
+        'status' => $statusSwitch,
+        'action' => $actions
+    ];
+}
 ?>
 <div class="dashboard-content">
-    <div class="email-template-header align-title-table">
-        <h1 class="page-title">Email Template Manager</h1>
-        <button onclick="showAddModal()" class="edit-button add-btn-top">Add New Template</button>
-    </div>
+   
     <div class="form-container">
-        <table class="room-table" style="width:100%;margin-top:20px;">
-            <thead><tr><th>ID</th><th>Subject</th><th>Slug</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody>
-            <?php foreach ($templates as $template): ?>
-                <tr>
-                    <td><?= $template['id'] ?></td>
-                    <td><?= htmlspecialchars($template['subject_title']) ?></td>
-                    <td><?= htmlspecialchars($template['slug']) ?></td>
-                    <td>
-                        <form action="emailTemplate.php" method="POST" style="display:inline;">
-                            <input type="hidden" name="statusChange" value="<?= $template['id'] ?>">
-                            <input type="hidden" name="statusValue" value="<?= $template['status'] ?>">
-                            <?php if($template['status']) {
-                                echo '<button class="status-toggle-btn active-status" type="submit">Active</button>';
-                            } else {
-                                echo '<button class="status-toggle-btn inactive-status" type="submit">Inactive</button>';
-                            } ?>
-                        </form>
-                    </td>
-                    <td>
-                        <button onclick="showEditModal(<?= $template['id'] ?>)" class="edit-button">Edit</button>
-                        <button onclick="confirmDelete(<?= $template['id'] ?>)" class="delete-button">Delete</button>
-                        <button onclick="showPreviewModal(<?= $template['id'] ?>)" class="edit-button" style="background:#2196f3;">Preview</button>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+        <script>
+        // Make the Add New button in the table header trigger the modal
+        document.addEventListener('DOMContentLoaded', function() {
+            var addBtn = document.querySelector('.admin-btn-add');
+            if (addBtn) {
+                addBtn.onclick = function(e) { e.preventDefault(); showAddModal(); };
+            }
+        });
+        </script>
+        <?php
+        include 'tableTemplate.php';
+        ?>
         <!-- Pagination Controls -->
         <div style="margin-top:20px;text-align:center;">
             <?php if ($totalPages > 1): ?>
@@ -292,17 +341,6 @@ if ($action === 'edit' && $id) {
         <button onclick="closeDeleteModal()" class="edit-button" style="background:#ccc; color:#222;">Cancel</button>
     </div>
 </div>
-<!-- Popup Message Modal -->
-<div id="popupModal" class="modal" style="display:<?= $popupMessage ? 'block' : 'none' ?>;">
-    <div class="modal-content" style="background:<?= $popupType === 'success' ? '#e8f5e9' : '#ffebee' ?>; max-width: 400px;">
-        <span class="close" onclick="closePopupModal()">&times;</span>
-        <h3 style="color:<?= $popupType === 'success' ? '#2e7d32' : '#b71c1c' ?>;">
-            <?= $popupType === 'success' ? 'Success' : 'Error' ?>
-        </h3>
-        <hr style="border: 2px solid <?= $popupType === 'success' ? '#388e3c' : '#d32f2f' ?>; width: 100%;">
-        <p><?= htmlspecialchars($popupMessage) ?></p>
-    </div>
-</div>
 <!-- Preview Modal -->
 <div id="previewModal" class="modal">
     <div class="modal-content compact-modal" style="max-width:700px;">
@@ -312,22 +350,13 @@ if ($action === 'edit' && $id) {
         <div id="previewAdminMessage" style="border:1px solid #eee; padding:18px; background:#f5f5f5; border-radius:8px;"></div>
     </div>
 </div>
-<?php if (isset($popupMessage) && $popupMessage && $popupType === 'success'): ?>
 <script>
-    setTimeout(function() {
-        window.location.href = 'emailTemplate.php';
-    }, 300);
-</script>
-<?php endif; ?>
-<script>
+
 // Modal logic
 function showAddModal() {
     document.getElementById('modalTitle').innerText = 'Add Email Template';
     document.getElementById('template_id').value = '';
     document.getElementById('subject_title').value = '';
-    // Clear TinyMCE editors
-    if (tinymce.get('user_message')) tinymce.get('user_message').setContent('');
-    if (tinymce.get('admin_message')) tinymce.get('admin_message').setContent('');
     document.getElementById('admin_mail').value = '';
     document.getElementById('status').value = '1';
     document.getElementById('slug').value = '';
@@ -340,11 +369,16 @@ function showEditModal(id) {
         document.getElementById('modalTitle').innerText = 'Edit Email Template';
         document.getElementById('template_id').value = template.id;
         document.getElementById('subject_title').value = template.subject_title;
-        if (tinymce.get('user_message')) tinymce.get('user_message').setContent(template.user_message);
-        if (tinymce.get('admin_message')) tinymce.get('admin_message').setContent(template.admin_message);
         document.getElementById('admin_mail').value = template.admin_mail;
         document.getElementById('status').value = template.status;
         document.getElementById('slug').value = template.slug;
+        // Set TinyMCE content for user_message and admin_message
+        if (tinymce.get('user_message')) {
+            tinymce.get('user_message').setContent(template.user_message || '');
+        }
+        if (tinymce.get('admin_message')) {
+            tinymce.get('admin_message').setContent(template.admin_message || '');
+        }
         document.getElementById('templateModal').style.display = 'block';
     }
 }
@@ -359,10 +393,6 @@ function confirmDelete(id) {
 }
 function closeDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
-}
-function closePopupModal() {
-    document.getElementById('popupModal').style.display = 'none';
-    window.location.href = 'emailTemplate.php';
 }
 function showPreviewModal(id) {
     var templates = <?php echo json_encode($templates); ?>;
@@ -380,28 +410,28 @@ function closePreviewModal() {
 window.onclick = function(event) {
     var templateModal = document.getElementById('templateModal');
     var deleteModal = document.getElementById('deleteModal');
-    var popupModal = document.getElementById('popupModal');
     var previewModal = document.getElementById('previewModal');
     if (event.target == templateModal) templateModal.style.display = 'none';
     if (event.target == deleteModal) deleteModal.style.display = 'none';
-    if (event.target == popupModal) popupModal.style.display = 'none';
     if (event.target == previewModal) previewModal.style.display = 'none';
 }
-  tinymce.init({
-    selector: '#user_message',
-    setup: function (editor) {
-      editor.on('change', function () {
-        editor.save();
-      });
-    }
-  });
-  tinymce.init({
-    selector: '#admin_message',
-    setup: function (editor) {
-      editor.on('change', function () {
-        editor.save();
-      });
-    }
+tinymce.init({
+    selector: 'textarea',
+    plugins: [
+      // Core editing features
+      'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+      // Your account includes a free trial of TinyMCE premium features
+      // Try the most popular premium features until Jul 11, 2025:
+      'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
+    ],
+    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+    tinycomments_mode: 'embedded',
+    tinycomments_author: 'Author name',
+    mergetags_list: [
+      { value: 'First.Name', title: 'First Name' },
+      { value: 'Email', title: 'Email' },
+    ],
+    ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
   });
 </script>
 <style>
@@ -682,5 +712,26 @@ window.onclick = function(event) {
     display: flex;
     justify-content: flex-end;
     margin-top: 18px;
+}
+.view-button {
+    background-color: #2196f3;
+    color: white;
+    padding: 8px 18px;
+    margin: 5px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.view-button:hover {
+    background-color: #1976d2;
+}
+.view-button svg {
+    vertical-align: middle;
+    width: 20px;
+    height: 20px;
 }
 </style> 
